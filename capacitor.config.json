@@ -1,0 +1,14 @@
+{
+  "appId": "com.transport.management",
+  "appName": "Transport Manager",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
