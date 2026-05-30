@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll as getVehicles } from '../services/vehicleService.js'
 import { getSchedules, addSchedule, updateSchedule, removeSchedule, getLogs, addLog, SERVICE_TYPES } from '../services/maintenanceService.js'
 import { getLatestKm } from '../services/kmLogService.js'
@@ -10,6 +11,7 @@ import Header from '../components/Header.jsx'
 
 function ScheduleForm({ open, onClose, onSaved, editing, vehicleId }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { service_type: 'Oil Change', interval_km: '5000', interval_days: '90', last_done_km: '', last_done_date: todayStr(), notes: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -37,18 +39,18 @@ function ScheduleForm({ open, onClose, onSaved, editing, vehicleId }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Schedule' : 'Add Service Schedule'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit') : t('Add Maintenance')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : editing ? 'Update' : 'Add'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>
       }
     >
       <div className="form-group">
-        <label className="form-label">Service Type</label>
+        <label className="form-label">{t('Service Type')}</label>
         <select className="form-input" value={form.service_type} onChange={e => f('service_type', e.target.value)}>
           {SERVICE_TYPES.map(s => <option key={s}>{s}</option>)}
         </select>
@@ -68,6 +70,7 @@ function ScheduleForm({ open, onClose, onSaved, editing, vehicleId }) {
 
 function ServiceLogModal({ open, onClose, onSaved, vehicleId, scheduleId, scheduleType }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { date: todayStr(), km: '', cost: '', workshop: '', notes: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -88,20 +91,20 @@ function ServiceLogModal({ open, onClose, onSaved, vehicleId, scheduleId, schedu
     <Modal isOpen={open} onClose={onClose} title={`Log Service: ${scheduleType}`}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : 'Log Service'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>
       }
     >
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
+        <div className="form-group"><label className="form-label">{t('Service Date')}</label><input className="form-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
         <div className="form-group"><label className="form-label">Current KM *</label><input className="form-input" type="number" value={form.km} onChange={e => setForm(p => ({ ...p, km: e.target.value }))} /></div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Cost ₹</label><input className="form-input" type="number" value={form.cost} onChange={e => setForm(p => ({ ...p, cost: e.target.value }))} /></div>
-        <div className="form-group"><label className="form-label">Workshop</label><input className="form-input" value={form.workshop} onChange={e => setForm(p => ({ ...p, workshop: e.target.value }))} /></div>
+        <div className="form-group"><label className="form-label">{t('Cost')}</label><input className="form-input" type="number" value={form.cost} onChange={e => setForm(p => ({ ...p, cost: e.target.value }))} /></div>
+        <div className="form-group"><label className="form-label">{t('Garage')}</label><input className="form-input" value={form.workshop} onChange={e => setForm(p => ({ ...p, workshop: e.target.value }))} /></div>
       </div>
       <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} /></div>
     </Modal>
@@ -110,6 +113,7 @@ function ServiceLogModal({ open, onClose, onSaved, vehicleId, scheduleId, schedu
 
 function VehicleMaintenance({ vehicle, currentKm, onBack }) {
   const { show } = useToast()
+  const { t } = useT()
   const [schedules, setSchedules] = useState([])
   const [logs, setLogs] = useState([])
   const [tab, setTab] = useState('schedules')
@@ -212,6 +216,7 @@ function VehicleMaintenance({ vehicle, currentKm, onBack }) {
 export default function Maintenance() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [vehicles, setVehicles] = useState([])
   const [kmMap, setKmMap] = useState({})
   const [loading, setLoading] = useState(true)
@@ -255,7 +260,7 @@ export default function Maintenance() {
 
   return (
     <>
-      <Header title="Maintenance" onBack={() => navigate('/more')} />
+      <Header title={t('Maintenance')} onBack={() => navigate('/more')} />
       <div className="page">
         {overdueCount > 0 && (
           <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 12, padding: '12px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10, color: '#ef4444' }}>

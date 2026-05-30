@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll, add, update, remove, addStock, reduceStock, getLowStock, getMovements } from '../services/inventoryService.js'
 import { useToast } from '../context/ToastContext.jsx'
 import { formatCurrency, todayStr, getErrorMsg } from '../utils.js'
@@ -10,6 +11,7 @@ const CATEGORIES = ['Lubricants', 'Filters', 'Tyres', 'Electricals', 'Fluids', '
 
 function ItemForm({ open, onClose, onSaved, editing }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { item_name: '', category: 'Spare Parts', qty: '', unit: 'Pcs', rate: '', reorder_level: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -30,30 +32,30 @@ function ItemForm({ open, onClose, onSaved, editing }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Item' : 'Add Item'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit') : t('Add Item')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : editing ? 'Update' : 'Add Item'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>
       }
     >
-      <div className="form-group"><label className="form-label">Item Name</label><input className="form-input" value={form.item_name||''} onChange={e => f('item_name', e.target.value)} placeholder="Item name" /></div>
+      <div className="form-group"><label className="form-label">{t('Name')}</label><input className="form-input" value={form.item_name||''} onChange={e => f('item_name', e.target.value)} placeholder="Item name" /></div>
       <div className="form-group">
-        <label className="form-label">Category</label>
+        <label className="form-label">{t('Category')}</label>
         <select className="form-input" value={form.category} onChange={e => f('category', e.target.value)}>
           {CATEGORIES.map(c => <option key={c}>{c}</option>)}
         </select>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Qty</label><input className="form-input" type="number" value={form.qty||''} onChange={e => f('qty', e.target.value)} /></div>
-        <div className="form-group"><label className="form-label">Unit</label><input className="form-input" value={form.unit||''} onChange={e => f('unit', e.target.value)} placeholder="Pcs/L/kg" /></div>
+        <div className="form-group"><label className="form-label">{t('Quantity')}</label><input className="form-input" type="number" value={form.qty||''} onChange={e => f('qty', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Unit')}</label><input className="form-input" value={form.unit||''} onChange={e => f('unit', e.target.value)} placeholder="Pcs/L/kg" /></div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div className="form-group"><label className="form-label">Rate ₹</label><input className="form-input" type="number" value={form.rate||''} onChange={e => f('rate', e.target.value)} /></div>
-        <div className="form-group"><label className="form-label">Reorder Level</label><input className="form-input" type="number" value={form.reorder_level||''} onChange={e => f('reorder_level', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Min Stock')}</label><input className="form-input" type="number" value={form.reorder_level||''} onChange={e => f('reorder_level', e.target.value)} /></div>
       </div>
     </Modal>
   )
@@ -61,6 +63,7 @@ function ItemForm({ open, onClose, onSaved, editing }) {
 
 function StockModal({ open, onClose, onSaved, item, type }) {
   const { show } = useToast()
+  const { t } = useT()
   const [qty, setQty]     = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
@@ -79,10 +82,10 @@ function StockModal({ open, onClose, onSaved, item, type }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={type === 'in' ? 'Add Stock' : 'Reduce Stock'}
+    <Modal isOpen={open} onClose={onClose} title={type === 'in' ? t('Stock') : t('Stock')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className={`btn ${type === 'in' ? 'btn-primary' : 'btn-danger'} flex-1`} onClick={handle} disabled={saving}>
             {saving ? <span className="spinner spinner-sm" /> : type === 'in' ? 'Add Stock' : 'Reduce'}
           </button>
@@ -99,6 +102,7 @@ function StockModal({ open, onClose, onSaved, item, type }) {
 export default function Inventory() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [items,     setItems]     = useState([])
   const [lowItems,  setLowItems]  = useState([])
   const [loading,   setLoading]   = useState(true)
@@ -134,17 +138,17 @@ export default function Inventory() {
 
   return (
     <>
-      <Header title="Inventory" onBack={() => navigate('/more')}
+      <Header title={t('Inventory')} onBack={() => navigate('/more')}
         rightAction={<button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModal(true) }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> {t('Add Item')}
         </button>}
       />
       <div className="page">
         {!loading && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 14 }}>
             {[
-              { label: 'Total Items', value: items.length, color: '#3b82f6' },
-              { label: 'Low Stock',   value: lowItems.length, color: '#f59e0b' },
+              { label: t('Inventory'), value: items.length, color: '#3b82f6' },
+              { label: t('Low Stock'),   value: lowItems.length, color: '#f59e0b' },
               { label: 'Value',       value: formatCurrency(items.reduce((s,i) => s + (i.qty||0)*(i.rate||0),0)), color: '#10b981' },
             ].map(s => (
               <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `2px solid ${s.color}`, borderRadius: 12, padding: '10px 8px', textAlign: 'center' }}>
@@ -156,9 +160,9 @@ export default function Inventory() {
         )}
 
         <div className="tabs">
-          <button className={`tab${tab === 'all' ? ' active' : ''}`} onClick={() => setTab('all')}>All Items</button>
+          <button className={`tab${tab === 'all' ? ' active' : ''}`} onClick={() => setTab('all')}>{t('Inventory')}</button>
           <button className={`tab${tab === 'low' ? ' active' : ''}`} onClick={() => setTab('low')}>
-            Low Stock {lowItems.length > 0 && <span style={{ background: '#f59e0b', color: '#000', borderRadius: 4, padding: '1px 5px', fontSize: 10, fontWeight: 800, marginLeft: 4 }}>{lowItems.length}</span>}
+            {t('Low Stock')} {lowItems.length > 0 && <span style={{ background: '#f59e0b', color: '#000', borderRadius: 4, padding: '1px 5px', fontSize: 10, fontWeight: 800, marginLeft: 4 }}>{lowItems.length}</span>}
           </button>
         </div>
 

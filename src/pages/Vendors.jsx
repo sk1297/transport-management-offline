@@ -7,11 +7,13 @@ import { useToast } from '../context/ToastContext.jsx'
 import { formatDate, formatCurrency, todayStr, getErrorMsg, getInitials } from '../utils.js'
 import Modal from '../components/Modal.jsx'
 import Header from '../components/Header.jsx'
+import { useT } from '../i18n/index.js'
 
 const VENDOR_TYPES = ['Fuel Station', 'Repair Shop', 'Spare Parts', 'Tyre Shop', 'Transport', 'Other']
 
 function VendorForm({ open, onClose, onSaved, editing }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { name: '', type: 'Fuel Station', phone: '', gstin: '', address: '', contact_person: '', ifsc_code: '', bank_name: '', bank_branch: '', account_no: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -34,27 +36,27 @@ function VendorForm({ open, onClose, onSaved, editing }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Vendor' : 'Add Vendor'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit Vendor') : t('Add Vendor')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
             {saving ? <span className="spinner spinner-sm" /> : null}
-            {editing ? 'Update' : 'Add Vendor'}
+            {editing ? t('Update') : t('Add Vendor')}
           </button>
         </>
       }
     >
-      <div className="form-group"><label className="form-label">Vendor Name</label><input className="form-input" value={form.name||''} onChange={e => f('name', e.target.value)} placeholder="Business name" /></div>
+      <div className="form-group"><label className="form-label">{t('Name')}</label><input className="form-input" value={form.name||''} onChange={e => f('name', e.target.value)} placeholder="Business name" /></div>
       <div className="form-group">
         <label className="form-label">Type</label>
         <select className="form-input" value={form.type} onChange={e => f('type', e.target.value)}>
-          {VENDOR_TYPES.map(t => <option key={t}>{t}</option>)}
+          {VENDOR_TYPES.map(vt => <option key={vt}>{vt}</option>)}
         </select>
       </div>
-      <div className="form-group"><label className="form-label">Phone</label><input className="form-input" type="tel" value={form.phone||''} onChange={e => f('phone', e.target.value)} placeholder="Contact number" /></div>
+      <div className="form-group"><label className="form-label">{t('Phone')}</label><input className="form-input" type="tel" value={form.phone||''} onChange={e => f('phone', e.target.value)} placeholder="Contact number" /></div>
       <div className="form-group">
-        <label className="form-label">GSTIN (Optional)</label>
+        <label className="form-label">{t('GSTIN')} (Optional)</label>
         <input className="form-input" value={form.gstin||''} onChange={e => f('gstin', e.target.value)} placeholder="GST number" />
         <div style={{display:'flex',gap:6,alignItems:'center',marginTop:4}}>
           <button type="button" style={{fontSize:11,padding:'3px 10px',borderRadius:6,border:'1px solid var(--border)',background:'var(--surface2)',cursor:'pointer',color:'var(--text2)'}}
@@ -65,10 +67,10 @@ function VendorForm({ open, onClose, onSaved, editing }) {
         </div>
       </div>
       <div className="form-group"><label className="form-label">Contact Person</label><input className="form-input" value={form.contact_person||''} onChange={e => f('contact_person', e.target.value)} placeholder="Contact person name" /></div>
-      <div className="form-group"><label className="form-label">Address</label><input className="form-input" value={form.address||''} onChange={e => f('address', e.target.value)} placeholder="Address" /></div>
+      <div className="form-group"><label className="form-label">{t('Address')}</label><input className="form-input" value={form.address||''} onChange={e => f('address', e.target.value)} placeholder="Address" /></div>
       <div style={{fontSize:11,fontWeight:700,color:'var(--text2)',textTransform:'uppercase',letterSpacing:0.5,margin:'12px 0 8px'}}>Bank Details</div>
       <div className="form-group">
-        <label className="form-label">IFSC Code</label>
+        <label className="form-label">{t('IFSC Code')}</label>
         <div style={{display:'flex',gap:6,alignItems:'center'}}>
           <input className="form-input" style={{flex:1}} value={form.ifsc_code||''} onChange={e => f('ifsc_code', e.target.value)} placeholder="e.g. SBIN0001234" />
           <button type="button" disabled={ifscLoading} style={{fontSize:11,padding:'3px 10px',borderRadius:6,border:'1px solid var(--border)',background:'var(--surface2)',cursor:'pointer',color:'var(--text2)',whiteSpace:'nowrap'}}
@@ -84,15 +86,16 @@ function VendorForm({ open, onClose, onSaved, editing }) {
           </button>
         </div>
       </div>
-      <div className="form-group"><label className="form-label">Bank Name</label><input className="form-input" value={form.bank_name||''} onChange={e => f('bank_name', e.target.value)} placeholder="Auto-filled on lookup" /></div>
-      <div className="form-group"><label className="form-label">Branch</label><input className="form-input" value={form.bank_branch||''} onChange={e => f('bank_branch', e.target.value)} placeholder="Auto-filled on lookup" /></div>
-      <div className="form-group"><label className="form-label">Account No</label><input className="form-input" value={form.account_no||''} onChange={e => f('account_no', e.target.value)} placeholder="Bank account number" /></div>
+      <div className="form-group"><label className="form-label">{t('Bank Name')}</label><input className="form-input" value={form.bank_name||''} onChange={e => f('bank_name', e.target.value)} placeholder="Auto-filled on lookup" /></div>
+      <div className="form-group"><label className="form-label">{t('Bank Branch')}</label><input className="form-input" value={form.bank_branch||''} onChange={e => f('bank_branch', e.target.value)} placeholder="Auto-filled on lookup" /></div>
+      <div className="form-group"><label className="form-label">{t('Account No')}</label><input className="form-input" value={form.account_no||''} onChange={e => f('account_no', e.target.value)} placeholder="Bank account number" /></div>
     </Modal>
   )
 }
 
 function VendorLedger({ vendor, onBack }) {
   const { show } = useToast()
+  const { t } = useT()
   const [entries, setEntries] = useState([])
   const [outstanding, setOutstanding] = useState(0)
   const [addModal, setAddModal] = useState(false)
@@ -124,8 +127,8 @@ function VendorLedger({ vendor, onBack }) {
       <div className="page">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
           {[
-            { label: 'Debit',       value: formatCurrency(entries.filter(e => e.type === 'debit').reduce((s,e) => s+(e.amount||0),0)), color: '#ef4444' },
-            { label: 'Credit',      value: formatCurrency(entries.filter(e => e.type === 'credit').reduce((s,e) => s+(e.amount||0),0)), color: '#10b981' },
+            { label: t('Debit'),       value: formatCurrency(entries.filter(e => e.type === 'debit').reduce((s,e) => s+(e.amount||0),0)), color: '#ef4444' },
+            { label: t('Credit'),      value: formatCurrency(entries.filter(e => e.type === 'credit').reduce((s,e) => s+(e.amount||0),0)), color: '#10b981' },
             { label: 'Outstanding', value: formatCurrency(outstanding), color: outstanding > 0 ? '#f59e0b' : '#10b981' },
           ].map(s => (
             <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 8px', textAlign: 'center' }}>
@@ -155,7 +158,7 @@ function VendorLedger({ vendor, onBack }) {
       <Modal isOpen={addModal} onClose={() => setAddModal(false)} title="Add Ledger Entry"
         footer={
           <>
-            <button className="btn btn-secondary flex-1" onClick={() => setAddModal(false)}>Cancel</button>
+            <button className="btn btn-secondary flex-1" onClick={() => setAddModal(false)}>{t('Cancel')}</button>
             <button className="btn btn-primary flex-1" onClick={handleAdd} disabled={saving}>
               {saving ? <span className="spinner spinner-sm" /> : 'Add Entry'}
             </button>
@@ -170,8 +173,8 @@ function VendorLedger({ vendor, onBack }) {
           </select>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div className="form-group"><label className="form-label">Amount ₹</label><input className="form-input" type="number" value={form.amount||''} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} /></div>
-          <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
+          <div className="form-group"><label className="form-label">{t('Amount')} ₹</label><input className="form-input" type="number" value={form.amount||''} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} /></div>
+          <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
         </div>
         <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={form.notes||''} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} /></div>
       </Modal>
@@ -181,6 +184,7 @@ function VendorLedger({ vendor, onBack }) {
 
 function AddBillModal({ open, onClose, onSaved, vendors }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { vendor_id: '', description: '', amount: '', date: todayStr(), due_date: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -199,12 +203,12 @@ function AddBillModal({ open, onClose, onSaved, vendors }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title="Add Vendor Bill"
+    <Modal isOpen={open} onClose={onClose} title={t('Add Bill')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : 'Add Bill'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Add Bill')}
           </button>
         </>
       }
@@ -218,10 +222,10 @@ function AddBillModal({ open, onClose, onSaved, vendors }) {
       </div>
       <div className="form-group"><label className="form-label">Description</label><input className="form-input" value={form.description||''} onChange={e => f('description', e.target.value)} placeholder="Bill description" /></div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Amount ₹</label><input className="form-input" type="number" value={form.amount||''} onChange={e => f('amount', e.target.value)} /></div>
-        <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date} onChange={e => f('date', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Amount')} ₹</label><input className="form-input" type="number" value={form.amount||''} onChange={e => f('amount', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={form.date} onChange={e => f('date', e.target.value)} /></div>
       </div>
-      <div className="form-group"><label className="form-label">Due Date</label><input className="form-input" type="date" value={form.due_date||''} onChange={e => f('due_date', e.target.value)} /></div>
+      <div className="form-group"><label className="form-label">{t('Due Date')}</label><input className="form-input" type="date" value={form.due_date||''} onChange={e => f('due_date', e.target.value)} /></div>
     </Modal>
   )
 }
@@ -229,6 +233,7 @@ function AddBillModal({ open, onClose, onSaved, vendors }) {
 export default function Vendors() {
   const navigate   = useNavigate()
   const { show }   = useToast()
+  const { t } = useT()
   const [tab, setTab] = useState('vendors')
   const [vendors,  setVendors]   = useState([])
   const [loading,  setLoading]   = useState(true)
@@ -288,10 +293,10 @@ export default function Vendors() {
 
   return (
     <>
-      <Header title="Vendors" onBack={() => navigate('/more')}
+      <Header title={t('Vendors')} onBack={() => navigate('/more')}
         rightAction={
           tab === 'bills'
-            ? <button className="btn btn-primary btn-sm" onClick={() => setAddBillOpen(true)}>+ Add Bill</button>
+            ? <button className="btn btn-primary btn-sm" onClick={() => setAddBillOpen(true)}>+ {t('Add Bill')}</button>
             : <button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModalOpen(true) }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
               </button>
@@ -300,8 +305,8 @@ export default function Vendors() {
       <div className="page">
         {/* Tab switcher */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-          {[{ id: 'vendors', label: 'Vendors' }, { id: 'bills', label: 'Bills Due' }].map(t => (
-            <button key={t.id} className={`filter-chip${tab === t.id ? ' active' : ''}`} onClick={() => setTab(t.id)}>{t.label}</button>
+          {[{ id: 'vendors', label: t('Vendors') }, { id: 'bills', label: 'Bills Due' }].map(tab2 => (
+            <button key={tab2.id} className={`filter-chip${tab === tab2.id ? ' active' : ''}`} onClick={() => setTab(tab2.id)}>{tab2.label}</button>
           ))}
         </div>
 
@@ -363,14 +368,14 @@ export default function Vendors() {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
                         <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{vendorName(bill.vendor_id)}</span>
-                        {overdue && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 5, background: 'rgba(239,68,68,0.15)', color: '#ef4444', textTransform: 'uppercase' }}>Overdue</span>}
+                        {overdue && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 5, background: 'rgba(239,68,68,0.15)', color: '#ef4444', textTransform: 'uppercase' }}>{t('Overdue')}</span>}
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 2 }}>{bill.description || '—'}</div>
                       {bill.due_date && <div style={{ fontSize: 11, color: overdue ? '#ef4444' : 'var(--text2)' }}>Due: {formatDate(bill.due_date)}</div>}
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 800, fontSize: 15, color: '#ef4444', marginBottom: 6 }}>{formatCurrency(bill.amount)}</div>
-                      <button className="btn btn-secondary btn-sm" onClick={() => handleMarkPaid(bill)} style={{ fontSize: 11, padding: '4px 10px' }}>Mark Paid</button>
+                      <button className="btn btn-secondary btn-sm" onClick={() => handleMarkPaid(bill)} style={{ fontSize: 11, padding: '4px 10px' }}>{t('Mark as Paid')}</button>
                     </div>
                   </div>
                   <div style={{ fontSize: 10, color: 'var(--text2)' }}>Date: {formatDate(bill.date)}</div>

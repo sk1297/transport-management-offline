@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import db from '../db/database.js'
 import { getAll as getVehicles } from '../services/vehicleService.js'
 import { formatCurrency, formatDate } from '../utils.js'
@@ -120,6 +121,7 @@ function SVGBarChart({ intervals, avgEff }) {
 export default function FuelEfficiency() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [vehicles, setVehicles] = useState([])
   const [selectedVehicle, setSelectedVehicle] = useState(null)
   const [vehicleData, setVehicleData] = useState({}) // vehicleId -> { logs, intervals, summary }
@@ -183,14 +185,14 @@ export default function FuelEfficiency() {
 
   return (
     <>
-      <Header title="Fuel Efficiency" onBack={() => navigate('/more')} />
+      <Header title={t('Fuel Efficiency')} onBack={() => navigate('/more')} />
       <div className="page">
         {loading && <div className="loading"><span className="spinner" />Loading…</div>}
 
         {!loading && vehicles.length === 0 && (
           <div className="empty">
             <div className="empty-icon">⛽</div>
-            <div className="empty-title">No fuel data available</div>
+            <div className="empty-title">{t('No data found')}</div>
             <div className="empty-desc">Add diesel logs with KM readings to track fuel efficiency</div>
           </div>
         )}
@@ -231,7 +233,7 @@ export default function FuelEfficiency() {
                       {/* Big KM/L number */}
                       <div style={{ textAlign: 'center', marginBottom: 16 }}>
                         <div style={{ fontSize: 52, fontWeight: 900, color: avgColor, lineHeight: 1 }}>{avgEff}</div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: avgColor, marginTop: 4 }}>KM / Litre</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: avgColor, marginTop: 4 }}>{t('KM per Litre')}</div>
                         <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 4 }}>
                           {avgEff >= 5 ? 'Excellent efficiency' : avgEff >= 3 ? 'Average efficiency' : 'Poor efficiency — check vehicle'}
                         </div>

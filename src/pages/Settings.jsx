@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext.jsx'
+import { useT, useLanguage } from '../i18n/index.js'
 import db from '../db/database.js'
 
 const DEFAULT = {
@@ -38,6 +39,8 @@ export function getSettings() {
 export default function Settings() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
+  const { lang, setLang } = useLanguage()
   const [form, setForm] = useState(DEFAULT)
   const [saving, setSaving] = useState(false)
 
@@ -86,8 +89,25 @@ export default function Settings() {
       </div>
       <div className="page" style={{ paddingBottom: 'calc(var(--nav-h) + 24px)' }}>
 
+        {/* ── Language Selector ── */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 10 }}>{t('App Language')}</div>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 6, display: 'flex', gap: 6 }}>
+            {[['en','English','🇬🇧'],['hi','हिंदी','🇮🇳'],['mr','मराठी','🏠']].map(([code, label, flag]) => (
+              <button key={code} onClick={() => setLang(code)} style={{
+                flex: 1, padding: '10px 6px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13,
+                background: lang === code ? 'var(--accent)' : 'var(--surface2)',
+                color: lang === code ? '#fff' : 'var(--text)',
+                transition: 'all 0.15s'
+              }}>
+                {flag} {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 10 }}>Company Details</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 10 }}>{t('Company Details')}</div>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 16 }}>
             {inp('companyName', 'Company Name', 'text', 'e.g. Sharma Transport Co.')}
             {inp('ownerName', 'Owner Name')}

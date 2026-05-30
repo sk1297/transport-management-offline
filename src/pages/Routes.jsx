@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll, add, update, remove } from '../services/routeService.js'
 import { useToast } from '../context/ToastContext.jsx'
 import { formatCurrency, getErrorMsg } from '../utils.js'
@@ -8,6 +9,7 @@ import Header from '../components/Header.jsx'
 
 function RouteForm({ open, onClose, onSaved, editing }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { from_loc: '', to_loc: '', distance_km: '', toll_approx: '', diesel_approx: '', notes: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -36,22 +38,22 @@ function RouteForm({ open, onClose, onSaved, editing }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Route' : 'Add Route'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit') : t('Add Route')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : editing ? 'Update' : 'Save Route'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>
       }
     >
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">From *</label><input className="form-input" value={form.from_loc} onChange={e => f('from_loc', e.target.value)} placeholder="Origin city" /></div>
-        <div className="form-group"><label className="form-label">To *</label><input className="form-input" value={form.to_loc} onChange={e => f('to_loc', e.target.value)} placeholder="Destination city" /></div>
+        <div className="form-group"><label className="form-label">{t('From')} *</label><input className="form-input" value={form.from_loc} onChange={e => f('from_loc', e.target.value)} placeholder="Origin city" /></div>
+        <div className="form-group"><label className="form-label">{t('To')} *</label><input className="form-input" value={form.to_loc} onChange={e => f('to_loc', e.target.value)} placeholder="Destination city" /></div>
       </div>
       <div className="form-group">
-        <label className="form-label">Distance (km)</label>
+        <label className="form-label">{t('Distance (km)')}</label>
         <div style={{ display: 'flex', gap: 8 }}>
           <input className="form-input" type="number" value={form.distance_km} onChange={e => f('distance_km', e.target.value)} style={{ flex: 1 }} />
           <button type="button" onClick={estimateDiesel} style={{ padding: '0 12px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--accent)', cursor: 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>Est. Diesel</button>
@@ -69,6 +71,7 @@ function RouteForm({ open, onClose, onSaved, editing }) {
 export default function Routes() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [routes, setRoutes] = useState([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(false)
@@ -96,9 +99,9 @@ export default function Routes() {
 
   return (
     <>
-      <Header title="Routes" onBack={() => navigate('/more')}
+      <Header title={t('Routes')} onBack={() => navigate('/more')}
         rightAction={<button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModal(true) }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> {t('Add Route')}
         </button>}
       />
       <div className="page">

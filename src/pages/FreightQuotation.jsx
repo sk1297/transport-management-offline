@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { Share } from '@capacitor/share'
 import { getAll, add, update, remove } from '../services/quotationService.js'
 import { getAll as getCustomers } from '../services/customerService.js'
@@ -127,6 +128,7 @@ function printQuotation(q) {
 
 function QuotationForm({ open, onClose, onSaved, editing, customers }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = {
     customer_id: '',
     customer_name: '',
@@ -196,19 +198,19 @@ function QuotationForm({ open, onClose, onSaved, editing, customers }) {
   const grand = calcGrand(form)
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Quotation' : 'New Quotation'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit') : t('Add Quotation')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : editing ? 'Update' : 'Create'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>
       }
     >
       {/* Customer */}
       <div className="form-group">
-        <label className="form-label">Customer *</label>
+        <label className="form-label">{t('Customer')} *</label>
         <select className="form-input" value={form.customer_id} onChange={e => handleCustomerChange(e.target.value)}>
           <option value="">— Select Customer —</option>
           {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -229,11 +231,11 @@ function QuotationForm({ open, onClose, onSaved, editing, customers }) {
 
       {/* From / To */}
       <div className="form-group">
-        <label className="form-label">From Location *</label>
+        <label className="form-label">{t('From')} *</label>
         <input className="form-input" value={form.from_loc} onChange={e => f('from_loc', e.target.value)} placeholder="e.g. Mumbai" />
       </div>
       <div className="form-group">
-        <label className="form-label">To Location *</label>
+        <label className="form-label">{t('To')} *</label>
         <input className="form-input" value={form.to_loc} onChange={e => f('to_loc', e.target.value)} placeholder="e.g. Delhi" />
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
@@ -259,7 +261,7 @@ function QuotationForm({ open, onClose, onSaved, editing, customers }) {
 
       {/* Rate Type */}
       <div className="form-group">
-        <label className="form-label">Rate Type</label>
+        <label className="form-label">{t('Rate')}</label>
         <div style={{ display: 'flex', gap: 6 }}>
           {RATE_TYPES.map(rt => (
             <button key={rt.value} type="button" onClick={() => f('rate_type', rt.value)}
@@ -340,6 +342,7 @@ function QuotationForm({ open, onClose, onSaved, editing, customers }) {
 
 function QuotationDetail({ quotation, onBack, onRefresh }) {
   const { show } = useToast()
+  const { t } = useT()
   const [updating, setUpdating] = useState(false)
 
   const grandTotal = (quotation.total_amount || 0) + (quotation.loading_charges || 0) + (quotation.unloading_charges || 0)
@@ -385,8 +388,8 @@ function QuotationDetail({ quotation, onBack, onRefresh }) {
       <Header title={`QT-${quotation.id}`} onBack={onBack}
         rightAction={
           <div style={{ display: 'flex', gap: 6 }}>
-            <button className="btn btn-secondary btn-sm" onClick={() => printQuotation(quotation)}>Print</button>
-            <button className="btn btn-secondary btn-sm" onClick={handleShare}>Share</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => printQuotation(quotation)}>{t('Print')}</button>
+            <button className="btn btn-secondary btn-sm" onClick={handleShare}>{t('Share')}</button>
           </div>
         }
       />
@@ -473,6 +476,7 @@ function QuotationDetail({ quotation, onBack, onRefresh }) {
 export default function FreightQuotation() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [quotations, setQuotations] = useState([])
   const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -530,11 +534,11 @@ export default function FreightQuotation() {
   return (
     <>
       <Header
-        title="Freight Quotations"
+        title={t('Freight Quotation')}
         onBack={() => navigate('/more')}
         rightAction={
           <button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModal(true) }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg> New
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg> {t('Add Quotation')}
           </button>
         }
       />
@@ -542,8 +546,8 @@ export default function FreightQuotation() {
         {/* Summary stats */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
           {[
-            { label: 'Total', value: totalCount, color: 'var(--accent)' },
-            { label: 'Accepted', value: acceptedCount, color: '#10b981' },
+            { label: t('Total'), value: totalCount, color: 'var(--accent)' },
+            { label: t('Accepted'), value: acceptedCount, color: '#10b981' },
             { label: 'Pending', value: pendingCount, color: '#f59e0b' },
           ].map(s => (
             <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 8px', textAlign: 'center' }}>

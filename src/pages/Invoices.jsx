@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Share } from '@capacitor/share'
+import { useT } from '../i18n/index.js'
 import { getAll, add, update, remove, addPayment, getPayments, autoInvoiceNumber } from '../services/invoiceService.js'
 import { getAll as getLRs } from '../services/lrService.js'
 import { useToast } from '../context/ToastContext.jsx'
@@ -59,6 +60,7 @@ function printInvoice(inv, payments) {
 
 function InvoiceDetail({ invoice, onBack, onRefresh }) {
   const { show } = useToast()
+  const { t } = useT()
   const [payments, setPayments] = useState([])
   const [payModal, setPayModal] = useState(false)
   const [payForm, setPayForm]   = useState({ date: todayStr(), amount: '', mode: 'Cash', notes: '', tds_pct: '0', tds_amount: '' })
@@ -120,8 +122,8 @@ function InvoiceDetail({ invoice, onBack, onRefresh }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
             {[
-              { label: 'Total', value: formatCurrency(invoice.total), color: 'var(--text)' },
-              { label: 'Paid', value: formatCurrency(totalPaid), color: '#10b981' },
+              { label: t('Total'), value: formatCurrency(invoice.total), color: 'var(--text)' },
+              { label: t('Paid'), value: formatCurrency(totalPaid), color: '#10b981' },
               { label: 'Balance', value: formatCurrency(balance), color: balance > 0 ? '#ef4444' : '#10b981' },
             ].map(s => (
               <div key={s.label} style={{ background: 'var(--surface2)', borderRadius: 10, padding: '10px 6px', textAlign: 'center' }}>
@@ -170,7 +172,7 @@ function InvoiceDetail({ invoice, onBack, onRefresh }) {
 
       <Modal isOpen={payModal} onClose={() => setPayModal(false)} title="Record Payment"
         footer={<>
-          <button className="btn btn-secondary flex-1" onClick={() => setPayModal(false)}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={() => setPayModal(false)}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handlePay} disabled={saving}>
             {saving ? <span className="spinner spinner-sm" /> : 'Record'}
           </button>
@@ -207,6 +209,7 @@ function InvoiceDetail({ invoice, onBack, onRefresh }) {
 
 function InvoiceForm({ open, onClose, onSaved }) {
   const { show }    = useToast()
+  const { t } = useT()
   const [lrs, setLrs]       = useState([])
   const [selectedLRs, setSelectedLRs] = useState([])
   const [step, setStep]     = useState(1)
@@ -277,7 +280,7 @@ function InvoiceForm({ open, onClose, onSaved }) {
     <Modal isOpen={open} onClose={onClose} title={step === 1 ? 'Select LRs' : 'Invoice Details'}
       footer={step === 1 ? (
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" disabled={selectedLRs.length === 0} onClick={() => setStep(2)}>Next ({selectedLRs.length} LRs)</button>
         </>
       ) : (
@@ -325,10 +328,10 @@ function InvoiceForm({ open, onClose, onSaved }) {
       {step === 2 && (
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div className="form-group"><label className="form-label">Invoice No.</label><input className="form-input" value={form.invoice_no} onChange={e => f('invoice_no', e.target.value)} /></div>
-            <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date} onChange={e => f('date', e.target.value)} /></div>
+            <div className="form-group"><label className="form-label">{t('Invoice No')}</label><input className="form-input" value={form.invoice_no} onChange={e => f('invoice_no', e.target.value)} /></div>
+            <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={form.date} onChange={e => f('date', e.target.value)} /></div>
           </div>
-          <div className="form-group"><label className="form-label">Due Date (Optional)</label><input className="form-input" type="date" value={form.due_date} onChange={e => f('due_date', e.target.value)} /></div>
+          <div className="form-group"><label className="form-label">{t('Due Date')} (Optional)</label><input className="form-input" type="date" value={form.due_date} onChange={e => f('due_date', e.target.value)} /></div>
           <div className="form-group"><label className="form-label">Consignee (Bill To)</label><input className="form-input" value={form.consignee} onChange={e => f('consignee', e.target.value)} placeholder="Party name" /></div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div className="form-group"><label className="form-label">Loading ₹</label><input className="form-input" type="number" value={form.loading_charges} onChange={e => f('loading_charges', e.target.value)} placeholder="0" /></div>
@@ -361,7 +364,7 @@ function InvoiceForm({ open, onClose, onSaved }) {
               </div>
             ))}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 15, color: 'var(--text)', borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 4 }}>
-              <span>Total</span><span style={{ color: '#10b981' }}>{formatCurrency(total)}</span>
+              <span>{t('Total')}</span><span style={{ color: '#10b981' }}>{formatCurrency(total)}</span>
             </div>
           </div>
         </div>
@@ -373,6 +376,7 @@ function InvoiceForm({ open, onClose, onSaved }) {
 export default function Invoices() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [invoices, setInvoices] = useState([])
   const [loading, setLoading]   = useState(true)
   const [modal, setModal]       = useState(false)
@@ -409,7 +413,7 @@ export default function Invoices() {
 
   return (
     <>
-      <Header title="Invoices" onBack={() => navigate('/more')}
+      <Header title={t('Invoices')} onBack={() => navigate('/more')}
         rightAction={
           <button className="btn btn-primary btn-sm" onClick={() => setModal(true)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -422,7 +426,7 @@ export default function Invoices() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 14 }}>
           {[
             { label: 'Total Billed', value: formatCurrency(totalRevenue), color: '#3b82f6' },
-            { label: 'Collected', value: formatCurrency(totalPaid), color: '#10b981' },
+            { label: t('Received'), value: formatCurrency(totalPaid), color: '#10b981' },
             { label: 'Pending', value: totalPending, color: '#f59e0b' },
           ].map(s => (
             <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `2px solid ${s.color}`, borderRadius: 12, padding: '10px 8px', textAlign: 'center' }}>

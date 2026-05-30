@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll, add, update, remove, getCommissions, addCommission, updateCommission, getAgentSummary } from '../services/agentService.js'
 import { getAll as getTrips } from '../services/tripService.js'
 import { useToast } from '../context/ToastContext.jsx'
@@ -9,6 +10,7 @@ import Header from '../components/Header.jsx'
 
 function AgentForm({ open, onClose, onSaved, editing }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { name: '', phone: '', address: '', commission_pct: '2', notes: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -29,20 +31,20 @@ function AgentForm({ open, onClose, onSaved, editing }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Agent' : 'Add Agent'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit') : t('Add Agent')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : editing ? 'Update' : 'Add Agent'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>
       }
     >
-      <div className="form-group"><label className="form-label">Agent Name *</label><input className="form-input" value={form.name} onChange={e => f('name', e.target.value)} /></div>
+      <div className="form-group"><label className="form-label">{t('Name')} *</label><input className="form-input" value={form.name} onChange={e => f('name', e.target.value)} /></div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Phone</label><input className="form-input" type="tel" value={form.phone} onChange={e => f('phone', e.target.value)} /></div>
-        <div className="form-group"><label className="form-label">Commission %</label><input className="form-input" type="number" step="0.5" value={form.commission_pct} onChange={e => f('commission_pct', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Phone')}</label><input className="form-input" type="tel" value={form.phone} onChange={e => f('phone', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Commission %')}</label><input className="form-input" type="number" step="0.5" value={form.commission_pct} onChange={e => f('commission_pct', e.target.value)} /></div>
       </div>
       <div className="form-group"><label className="form-label">Address</label><input className="form-input" value={form.address} onChange={e => f('address', e.target.value)} /></div>
       <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={form.notes} onChange={e => f('notes', e.target.value)} /></div>
@@ -52,6 +54,7 @@ function AgentForm({ open, onClose, onSaved, editing }) {
 
 function CommissionModal({ open, onClose, onSaved, agentId, agent }) {
   const { show } = useToast()
+  const { t } = useT()
   const [trips, setTrips] = useState([])
   const blank = { trip_id: '', lr_no: '', freight_amount: '', date: todayStr(), notes: '', paid: false }
   const [form, setForm] = useState(blank)
@@ -82,12 +85,12 @@ function CommissionModal({ open, onClose, onSaved, agentId, agent }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title="Log Commission"
+    <Modal isOpen={open} onClose={onClose} title={t('Commission')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : 'Save'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>
       }
@@ -119,6 +122,7 @@ function CommissionModal({ open, onClose, onSaved, agentId, agent }) {
 
 function AgentDetail({ agent, onBack, onRefresh }) {
   const { show } = useToast()
+  const { t } = useT()
   const [commissions, setCommissions] = useState([])
   const [summary, setSummary] = useState({ totalEarned: 0, totalPaid: 0, pending: 0 })
   const [commModal, setCommModal] = useState(false)
@@ -199,6 +203,7 @@ function AgentDetail({ agent, onBack, onRefresh }) {
 export default function Agents() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [agents, setAgents] = useState([])
   const [summaries, setSummaries] = useState({})
   const [loading, setLoading] = useState(true)
@@ -232,9 +237,9 @@ export default function Agents() {
 
   return (
     <>
-      <Header title="Commission Agents" onBack={() => navigate('/more')}
+      <Header title={t('Agents')} onBack={() => navigate('/more')}
         rightAction={<button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModal(true) }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> {t('Add Agent')}
         </button>}
       />
       <div className="page">

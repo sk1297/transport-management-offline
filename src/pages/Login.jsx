@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useT } from '../i18n/index.js'
 
 export default function Login() {
+  const { t } = useT()
   const { login, loading } = useAuth()
   const [mobile, setMobile]     = useState('')
   const [password, setPassword] = useState('')
@@ -92,7 +94,7 @@ export default function Login() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
               </svg>
-              Mobile Number
+              {t('Mobile Number')}
             </label>
             <input
               className="lp-input-field"
@@ -109,7 +111,7 @@ export default function Login() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
               </svg>
-              Password / PIN
+              {t('Password / PIN')}
             </label>
             <div style={{ position: 'relative' }}>
               <input
@@ -145,7 +147,7 @@ export default function Login() {
                   <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
                   <polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
                 </svg>
-                Sign In
+                {t('Sign In')}
               </>
             )}
           </button>

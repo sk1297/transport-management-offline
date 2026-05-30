@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll as getVehicles } from '../services/vehicleService.js'
 import { useToast } from '../context/ToastContext.jsx'
 import { formatDate, formatCurrency, todayStr, getErrorMsg } from '../utils.js'
@@ -13,6 +14,7 @@ const TYRE_BRANDS = ['MRF','Apollo','CEAT','Bridgestone','Michelin','JK','Goodye
 
 function TyreForm({ open, onClose, onSaved, editing, vehicles }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { vehicle_id:'', serial_no:'', brand:'MRF', size:'', position:'Front Left', purchase_date:todayStr(), purchase_cost:'', km_at_fitting:'', notes:'' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -33,33 +35,33 @@ function TyreForm({ open, onClose, onSaved, editing, vehicles }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing?'Edit Tyre':'Add Tyre'}
+    <Modal isOpen={open} onClose={onClose} title={editing?t('Edit'):t('Add Tyre')}
       footer={<>
-        <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+        <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
         <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-          {saving?<span className="spinner spinner-sm"/>:editing?'Update':'Add Tyre'}
+          {saving?<span className="spinner spinner-sm"/>:t('Save')}
         </button>
       </>}
     >
       <div className="form-group"><label className="form-label">Serial Number *</label><input className="form-input" value={form.serial_no} onChange={e=>f('serial_no',e.target.value)} placeholder="Tyre serial / batch no."/></div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         <div className="form-group">
-          <label className="form-label">Brand</label>
+          <label className="form-label">{t('Brand')}</label>
           <select className="form-input" value={form.brand} onChange={e=>f('brand',e.target.value)}>
             {TYRE_BRANDS.map(b=><option key={b}>{b}</option>)}
           </select>
         </div>
-        <div className="form-group"><label className="form-label">Size</label><input className="form-input" value={form.size} onChange={e=>f('size',e.target.value)} placeholder="e.g. 10.00-20"/></div>
+        <div className="form-group"><label className="form-label">{t('Size')}</label><input className="form-input" value={form.size} onChange={e=>f('size',e.target.value)} placeholder="e.g. 10.00-20"/></div>
       </div>
       <div className="form-group">
-        <label className="form-label">Vehicle</label>
+        <label className="form-label">{t('Vehicle')}</label>
         <select className="form-input" value={form.vehicle_id} onChange={e=>f('vehicle_id',e.target.value)}>
           <option value="">— Not fitted —</option>
           {vehicles.map(v=><option key={v.id} value={v.id}>{v.name} ({v.reg_no})</option>)}
         </select>
       </div>
       <div className="form-group">
-        <label className="form-label">Position</label>
+        <label className="form-label">{t('Position')}</label>
         <select className="form-input" value={form.position} onChange={e=>f('position',e.target.value)}>
           {POSITIONS.map(p=><option key={p}>{p}</option>)}
         </select>
@@ -68,7 +70,7 @@ function TyreForm({ open, onClose, onSaved, editing, vehicles }) {
         <div className="form-group"><label className="form-label">Purchase Date</label><input className="form-input" type="date" value={form.purchase_date} onChange={e=>f('purchase_date',e.target.value)}/></div>
         <div className="form-group"><label className="form-label">Purchase Cost ₹</label><input className="form-input" type="number" value={form.purchase_cost} onChange={e=>f('purchase_cost',e.target.value)}/></div>
       </div>
-      <div className="form-group"><label className="form-label">KM at Fitting</label><input className="form-input" type="number" value={form.km_at_fitting} onChange={e=>f('km_at_fitting',e.target.value)} placeholder="Current odometer reading"/></div>
+      <div className="form-group"><label className="form-label">{t('KM at Fitting')}</label><input className="form-input" type="number" value={form.km_at_fitting} onChange={e=>f('km_at_fitting',e.target.value)} placeholder="Current odometer reading"/></div>
       <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={form.notes} onChange={e=>f('notes',e.target.value)}/></div>
     </Modal>
   )
@@ -76,6 +78,7 @@ function TyreForm({ open, onClose, onSaved, editing, vehicles }) {
 
 function TyreLogModal({ open, onClose, onSaved, tyreId }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { type:'Puncture', date:todayStr(), km:'', cost:'', notes:'' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -94,8 +97,8 @@ function TyreLogModal({ open, onClose, onSaved, tyreId }) {
   return (
     <Modal isOpen={open} onClose={onClose} title="Log Tyre Event"
       footer={<>
-        <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
-        <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>Save</button>
+        <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
+        <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>{t('Save')}</button>
       </>}
     >
       <div className="form-group">
@@ -179,6 +182,7 @@ function TyreDetail({ tyre, vehicle, onBack, onRefresh }) {
 export default function TyreManagement() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [tyres, setTyres] = useState([])
   const [vehicles, setVehicles] = useState([])
   const [loading, setLoading] = useState(true)
@@ -216,9 +220,9 @@ export default function TyreManagement() {
 
   return (
     <>
-      <Header title="Tyre Management" onBack={()=>navigate('/more')}
+      <Header title={t('Tyre Management')} onBack={()=>navigate('/more')}
         rightAction={<button className="btn btn-primary btn-sm" onClick={()=>{setEditing(null);setModal(true)}}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> {t('Add Tyre')}
         </button>}
       />
       <div className="page">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll, add, remove, getAllTolls, addToll, removeToll, getMileage } from '../services/dieselService.js'
 import { getAll as getVehicles } from '../services/vehicleService.js'
 import { getAll as getVendors } from '../services/vendorService.js'
@@ -12,6 +13,7 @@ import Header from '../components/Header.jsx'
 export default function DieselToll() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [tab, setTab]           = useState('diesel')
   const [dieselLogs, setDiesel] = useState([])
   const [tollLogs, setTolls]    = useState([])
@@ -78,16 +80,16 @@ export default function DieselToll() {
 
   return (
     <>
-      <Header title="Diesel & Toll" onBack={() => navigate('/more')}
+      <Header title={t('Diesel & Toll')} onBack={() => navigate('/more')}
         rightAction={<button className="btn btn-primary btn-sm" onClick={() => setModal(true)}>+ Log</button>}
       />
       <div className="page">
         {/* Summary */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 14 }}>
           {[
-            { label: 'Diesel Cost', value: formatCurrency(totalDiesel), color: '#f59e0b' },
-            { label: 'Total Litres', value: `${totalLitres.toFixed(1)} L`, color: '#10b981' },
-            { label: 'Toll Cost', value: formatCurrency(totalToll), color: '#3b82f6' },
+            { label: t('Diesel'), value: formatCurrency(totalDiesel), color: '#f59e0b' },
+            { label: t('Litres'), value: `${totalLitres.toFixed(1)} L`, color: '#10b981' },
+            { label: t('Toll'), value: formatCurrency(totalToll), color: '#3b82f6' },
           ].map(s => (
             <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 8px', textAlign: 'center' }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: s.color }}>{s.value}</div>
@@ -99,7 +101,7 @@ export default function DieselToll() {
         {/* Mileage */}
         {vehicles.filter(v => mileage[v.id]).length > 0 && (
           <div className="card" style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Vehicle Mileage</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>{t('Vehicle Mileage')}</div>
             {vehicles.filter(v => mileage[v.id]).map(v => (
               <div key={v.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
                 <span style={{ fontSize: 13, color: 'var(--text)' }}>{v.name}</span>
@@ -118,7 +120,7 @@ export default function DieselToll() {
         {loading && <div className="loading"><span className="spinner" />Loading…</div>}
 
         {!loading && tab === 'diesel' && (() => {
-          if (dieselLogs.length === 0) return <div className="empty"><div className="empty-icon">⛽</div><div className="empty-title">No diesel logs</div></div>
+          if (dieselLogs.length === 0) return <div className="empty"><div className="empty-icon">⛽</div><div className="empty-title">{t('No diesel logs')}</div></div>
           // Build sorted-by-km map per vehicle for per-entry mileage
           const vehLogs = {}
           for (const d of dieselLogs) {
@@ -159,7 +161,7 @@ export default function DieselToll() {
         })()}
 
         {!loading && tab === 'toll' && (
-          tollLogs.length === 0 ? <div className="empty"><div className="empty-icon">🛣️</div><div className="empty-title">No toll logs</div></div>
+          tollLogs.length === 0 ? <div className="empty"><div className="empty-icon">🛣️</div><div className="empty-title">{t('No toll logs')}</div></div>
           : tollLogs.slice().reverse().map(t => (
             <div key={t.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid #3b82f6', borderRadius: 12, padding: '12px 14px', marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
@@ -178,12 +180,12 @@ export default function DieselToll() {
       </div>
 
       {/* Unified Add Modal */}
-      <Modal isOpen={modal} onClose={() => setModal(false)} title="Log Entry"
+      <Modal isOpen={modal} onClose={() => setModal(false)} title={t('Log Entry')}
         footer={
           <>
-            <button className="btn btn-secondary flex-1" onClick={() => setModal(false)}>Cancel</button>
+            <button className="btn btn-secondary flex-1" onClick={() => setModal(false)}>{t('Cancel')}</button>
             <button className="btn btn-primary flex-1" onClick={tab === 'diesel' ? handleSaveDiesel : handleSaveToll} disabled={saving}>
-              {saving ? <span className="spinner spinner-sm" /> : 'Save'}
+              {saving ? <span className="spinner spinner-sm" /> : t('Save')}
             </button>
           </>
         }
@@ -197,23 +199,23 @@ export default function DieselToll() {
         {tab === 'diesel' && (
           <>
             <div className="form-group">
-              <label className="form-label">Vehicle</label>
+              <label className="form-label">{t('Vehicle')}</label>
               <select className="form-input" value={dForm.vehicle_id} onChange={e => df('vehicle_id', e.target.value)}>
                 <option value="">— Select —</option>
                 {vehicles.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
               </select>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div className="form-group"><label className="form-label">Litres</label><input className="form-input" type="number" value={dForm.litres} onChange={e => df('litres', e.target.value)} /></div>
-              <div className="form-group"><label className="form-label">Rate ₹/L</label><input className="form-input" type="number" value={dForm.rate} onChange={e => df('rate', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">{t('Litres')}</label><input className="form-input" type="number" value={dForm.litres} onChange={e => df('litres', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">{t('Rate per Litre')} ₹</label><input className="form-input" type="number" value={dForm.rate} onChange={e => df('rate', e.target.value)} /></div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div className="form-group"><label className="form-label">Amount ₹</label><input className="form-input" type="number" value={dForm.amount} onChange={e => df('amount', e.target.value)} /></div>
-              <div className="form-group"><label className="form-label">KM Reading</label><input className="form-input" type="number" value={dForm.km_reading} onChange={e => df('km_reading', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">{t('Amount')} ₹</label><input className="form-input" type="number" value={dForm.amount} onChange={e => df('amount', e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">{t('KM Reading')}</label><input className="form-input" type="number" value={dForm.km_reading} onChange={e => df('km_reading', e.target.value)} /></div>
             </div>
-            <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={dForm.date} onChange={e => df('date', e.target.value)} /></div>
+            <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={dForm.date} onChange={e => df('date', e.target.value)} /></div>
             <div className="form-group">
-              <label className="form-label">Vendor</label>
+              <label className="form-label">{t('Pump Name')}</label>
               <select className="form-input" value={dForm.vendor_id} onChange={e => df('vendor_id', e.target.value)}>
                 <option value="">— Select —</option>
                 {vendors.filter(v => v.type === 'Fuel Station').map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
@@ -225,16 +227,16 @@ export default function DieselToll() {
         {tab === 'toll' && (
           <>
             <div className="form-group">
-              <label className="form-label">Trip (Optional)</label>
+              <label className="form-label">{t('Trip (Optional)')}</label>
               <select className="form-input" value={tForm.trip_id} onChange={e => setTForm(p => ({ ...p, trip_id: e.target.value }))}>
                 <option value="">— Select —</option>
-                {trips.map(t => <option key={t.id} value={t.id}>{t.from_loc} → {t.to_loc}</option>)}
+                {trips.map(tr => <option key={tr.id} value={tr.id}>{tr.from_loc} → {tr.to_loc}</option>)}
               </select>
             </div>
-            <div className="form-group"><label className="form-label">Toll Location</label><input className="form-input" value={tForm.location} onChange={e => setTForm(p => ({ ...p, location: e.target.value }))} placeholder="Toll plaza name" /></div>
+            <div className="form-group"><label className="form-label">{t('Toll Plaza')}</label><input className="form-input" value={tForm.location} onChange={e => setTForm(p => ({ ...p, location: e.target.value }))} placeholder="Toll plaza name" /></div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div className="form-group"><label className="form-label">Amount ₹</label><input className="form-input" type="number" value={tForm.amount} onChange={e => setTForm(p => ({ ...p, amount: e.target.value }))} /></div>
-              <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={tForm.date} onChange={e => setTForm(p => ({ ...p, date: e.target.value }))} /></div>
+              <div className="form-group"><label className="form-label">{t('Amount')} ₹</label><input className="form-input" type="number" value={tForm.amount} onChange={e => setTForm(p => ({ ...p, amount: e.target.value }))} /></div>
+              <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={tForm.date} onChange={e => setTForm(p => ({ ...p, date: e.target.value }))} /></div>
             </div>
           </>
         )}

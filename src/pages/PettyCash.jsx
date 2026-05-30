@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll, add, remove, getSummary } from '../services/pettyCashService.js'
 import { useToast } from '../context/ToastContext.jsx'
 import { formatDate, formatCurrency, todayStr, getErrorMsg } from '../utils.js'
@@ -10,6 +11,7 @@ const PURPOSES = ['Office Supplies', 'Tea/Snacks', 'Transport', 'Courier', 'Clea
 
 function AddEntryModal({ open, onClose, onSaved }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { type: 'out', amount: '', date: todayStr(), purpose: 'Other', given_to: '', notes: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -28,11 +30,11 @@ function AddEntryModal({ open, onClose, onSaved }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title="Petty Cash Entry"
+    <Modal isOpen={open} onClose={onClose} title={t('Petty Cash')}
       footer={<>
-        <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+        <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
         <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-          {saving ? <span className="spinner spinner-sm"/> : 'Save'}
+          {saving ? <span className="spinner spinner-sm"/> : t('Save')}
         </button>
       </>}
     >
@@ -48,8 +50,8 @@ function AddEntryModal({ open, onClose, onSaved }) {
         </div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-        <div className="form-group"><label className="form-label">Amount ₹</label><input className="form-input" type="number" value={form.amount} onChange={e=>f('amount',e.target.value)}/></div>
-        <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date} onChange={e=>f('date',e.target.value)}/></div>
+        <div className="form-group"><label className="form-label">{t('Amount')} ₹</label><input className="form-input" type="number" value={form.amount} onChange={e=>f('amount',e.target.value)}/></div>
+        <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={form.date} onChange={e=>f('date',e.target.value)}/></div>
       </div>
       <div className="form-group">
         <label className="form-label">Purpose</label>
@@ -58,7 +60,7 @@ function AddEntryModal({ open, onClose, onSaved }) {
         </select>
       </div>
       <div className="form-group"><label className="form-label">Given To / Received From</label><input className="form-input" value={form.given_to} onChange={e=>f('given_to',e.target.value)} placeholder="Name"/></div>
-      <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={form.notes} onChange={e=>f('notes',e.target.value)} placeholder="Optional notes"/></div>
+      <div className="form-group"><label className="form-label">{t('Description')}</label><input className="form-input" value={form.notes} onChange={e=>f('notes',e.target.value)} placeholder="Optional notes"/></div>
     </Modal>
   )
 }
@@ -66,6 +68,7 @@ function AddEntryModal({ open, onClose, onSaved }) {
 export default function PettyCash() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [entries, setEntries] = useState([])
   const [summary, setSummary] = useState({ balance:0, totalIn:0, totalOut:0 })
   const [loading, setLoading] = useState(true)
@@ -104,7 +107,7 @@ export default function PettyCash() {
 
   return (
     <>
-      <Header title="Petty Cash" onBack={()=>navigate('/more')}
+      <Header title={t('Petty Cash')} onBack={()=>navigate('/more')}
         rightAction={<button className="btn btn-primary btn-sm" onClick={()=>setModal(true)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
         </button>}
@@ -133,7 +136,7 @@ export default function PettyCash() {
         </div>
 
         {loading && <div className="loading"><span className="spinner"/>Loading…</div>}
-        {!loading && filtered.length===0 && <div className="empty"><div className="empty-icon">💰</div><div className="empty-title">No entries</div><div className="empty-desc">Add your first petty cash entry</div></div>}
+        {!loading && filtered.length===0 && <div className="empty"><div className="empty-icon">💰</div><div className="empty-title">{t('No data found')}</div><div className="empty-desc">Add your first petty cash entry</div></div>}
 
         {!loading && sortedDates.map(date => {
           const dayIn  = grouped[date].filter(e=>e.type==='in'||e.type==='opening').reduce((s,e)=>s+(e.amount||0),0)

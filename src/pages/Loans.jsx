@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll, add, update, remove, getPayments, addPayment } from '../services/loanService.js'
 import { getAll as getVehicles } from '../services/vehicleService.js'
 import { useToast } from '../context/ToastContext.jsx'
@@ -9,6 +10,7 @@ import Header from '../components/Header.jsx'
 
 function LoanForm({ open, onClose, onSaved, editing, vehicles }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { vehicle_id: '', bank_name: '', loan_amount: '', emi_amount: '', start_date: todayStr(), tenure_months: '', paid_emis: '0', status: 'Active' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -29,18 +31,18 @@ function LoanForm({ open, onClose, onSaved, editing, vehicles }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Loan' : 'Add Loan'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit') : t('Add Loan')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : editing ? 'Update' : 'Add Loan'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>
       }
     >
       <div className="form-group">
-        <label className="form-label">Vehicle</label>
+        <label className="form-label">{t('Lender')}</label>
         <select className="form-input" value={form.vehicle_id} onChange={e => f('vehicle_id', e.target.value)}>
           <option value="">— Select —</option>
           {vehicles.map(v => <option key={v.id} value={v.id}>{v.name} ({v.reg_no})</option>)}
@@ -70,6 +72,7 @@ function LoanForm({ open, onClose, onSaved, editing, vehicles }) {
 
 function LoanDetail({ loan, vehicle, onBack, onRefresh }) {
   const { show } = useToast()
+  const { t } = useT()
   const [payments, setPayments] = useState([])
   const [payModal, setPayModal] = useState(false)
   const [payForm, setPayForm] = useState({ date: todayStr(), amount: loan.emi_amount || '', mode: 'Bank Transfer' })
@@ -147,16 +150,16 @@ function LoanDetail({ loan, vehicle, onBack, onRefresh }) {
       <Modal isOpen={payModal} onClose={() => setPayModal(false)} title="Record EMI Payment"
         footer={
           <>
-            <button className="btn btn-secondary flex-1" onClick={() => setPayModal(false)}>Cancel</button>
+            <button className="btn btn-secondary flex-1" onClick={() => setPayModal(false)}>{t('Cancel')}</button>
             <button className="btn btn-primary flex-1" onClick={handlePay} disabled={saving}>
-              {saving ? <span className="spinner spinner-sm" /> : 'Record Payment'}
+              {saving ? <span className="spinner spinner-sm" /> : t('Save')}
             </button>
           </>
         }
       >
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div className="form-group"><label className="form-label">Amount ₹</label><input className="form-input" type="number" value={payForm.amount} onChange={e => setPayForm(p => ({ ...p, amount: e.target.value }))} /></div>
-          <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={payForm.date} onChange={e => setPayForm(p => ({ ...p, date: e.target.value }))} /></div>
+          <div className="form-group"><label className="form-label">{t('Amount')} ₹</label><input className="form-input" type="number" value={payForm.amount} onChange={e => setPayForm(p => ({ ...p, amount: e.target.value }))} /></div>
+          <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={payForm.date} onChange={e => setPayForm(p => ({ ...p, date: e.target.value }))} /></div>
         </div>
         <div className="form-group">
           <label className="form-label">Payment Mode</label>
@@ -175,6 +178,7 @@ function LoanDetail({ loan, vehicle, onBack, onRefresh }) {
 export default function Loans() {
   const navigate  = useNavigate()
   const { show }  = useToast()
+  const { t } = useT()
   const [loans,    setLoans]    = useState([])
   const [vehicles, setVehicles] = useState([])
   const [loading,  setLoading]  = useState(true)
@@ -203,9 +207,9 @@ export default function Loans() {
 
   return (
     <>
-      <Header title="Loans & EMI" onBack={() => navigate('/more')}
+      <Header title={t('Loans')} onBack={() => navigate('/more')}
         rightAction={<button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModal(true) }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> {t('Add Loan')}
         </button>}
       />
       <div className="page">

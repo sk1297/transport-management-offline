@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getTripPL, getVehicleExpenses, getMonthlyPL, getOutstandingReceivables } from '../services/reportService.js'
 import { getAll as getTrips } from '../services/tripService.js'
 import { getAll as getVehicles } from '../services/vehicleService.js'
@@ -86,6 +87,7 @@ function printReport(title, content) {
 export default function Reports() {
   const navigate = useNavigate()
   const { show }  = useToast()
+  const { t } = useT()
   const [tab, setTab]             = useState('monthly')
   const [trips, setTrips]         = useState([])
   const [vehicles, setVehicles]   = useState([])
@@ -157,7 +159,7 @@ export default function Reports() {
 
   return (
     <>
-      <Header title="Reports" onBack={() => navigate('/more')} />
+      <Header title={t('Reports')} onBack={() => navigate('/more')} />
       <div className="page">
         {/* Tabs - scrollable */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 14, overflowX: 'auto', scrollbarWidth: 'none' }}>
@@ -168,10 +170,10 @@ export default function Reports() {
             { id: 'vehicles', label: 'Vehicle Exp.' },
             { id: 'balance', label: 'Balance Sheet' },
             { id: 'cashflow', label: 'Cash Flow' },
-            { id: 'outstanding', label: 'Receivables' },
-            { id: 'aging', label: 'Aging' },
-          ].map(t => (
-            <button key={t.id} className={`filter-chip${tab === t.id ? ' active' : ''}`} onClick={() => setTab(t.id)} style={{ whiteSpace: 'nowrap' }}>{t.label}</button>
+            { id: 'outstanding', label: t('Receivables') },
+            { id: 'aging', label: t('Aging') },
+          ].map(tabItem => (
+            <button key={tabItem.id} className={`filter-chip${tab === tabItem.id ? ' active' : ''}`} onClick={() => setTab(tabItem.id)} style={{ whiteSpace: 'nowrap' }}>{tabItem.label}</button>
           ))}
         </div>
 
@@ -185,13 +187,13 @@ export default function Reports() {
               <button className="btn btn-secondary btn-sm" onClick={() => {
                 const content = `<table><tr><th>Metric</th><th>Amount</th></tr><tr><td>Revenue</td><td>₹${monthlyPL.revenue.toLocaleString('en-IN')}</td></tr><tr><td>Expenses</td><td>₹${monthlyPL.expenses.toLocaleString('en-IN')}</td></tr><tr class="total"><td>Net Profit</td><td>₹${monthlyPL.profit.toLocaleString('en-IN')}</td></tr></table>`
                 printReport(`Monthly P&L — ${month}`, content)
-              }}>Print</button>
+              }}>{t('Print')}</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
               {[
-                { label: 'Revenue', value: formatCurrency(monthlyPL.revenue), color: '#10b981' },
-                { label: 'Expenses', value: formatCurrency(monthlyPL.expenses), color: '#ef4444' },
-                { label: monthlyPL.profit >= 0 ? 'Profit' : 'Loss', value: formatCurrency(Math.abs(monthlyPL.profit)), color: monthlyPL.profit >= 0 ? '#10b981' : '#ef4444' },
+                { label: t('Revenue'), value: formatCurrency(monthlyPL.revenue), color: '#10b981' },
+                { label: t('Expenses'), value: formatCurrency(monthlyPL.expenses), color: '#ef4444' },
+                { label: monthlyPL.profit >= 0 ? t('Profit') : t('Loss'), value: formatCurrency(Math.abs(monthlyPL.profit)), color: monthlyPL.profit >= 0 ? '#10b981' : '#ef4444' },
               ].map(s => (
                 <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `2px solid ${s.color}`, borderRadius: 12, padding: '10px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: s.color }}>{s.value}</div>
@@ -242,9 +244,9 @@ export default function Reports() {
                   <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 8 }}>{formatDate(trip.start_date)} · {trip.status}</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
                     {[
-                      { label: 'Revenue', value: formatCurrency(pl.revenue), color: '#10b981' },
-                      { label: 'Expenses', value: formatCurrency(pl.expenses), color: '#ef4444' },
-                      { label: pl.profit >= 0 ? 'Profit' : 'Loss', value: formatCurrency(Math.abs(pl.profit)), color: pl.profit >= 0 ? '#10b981' : '#ef4444' },
+                      { label: t('Revenue'), value: formatCurrency(pl.revenue), color: '#10b981' },
+                      { label: t('Expenses'), value: formatCurrency(pl.expenses), color: '#ef4444' },
+                      { label: pl.profit >= 0 ? t('Profit') : t('Loss'), value: formatCurrency(Math.abs(pl.profit)), color: pl.profit >= 0 ? '#10b981' : '#ef4444' },
                     ].map(s => (
                       <div key={s.label} style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: 12, fontWeight: 800, color: s.color }}>{s.value}</div>
@@ -277,13 +279,13 @@ export default function Reports() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 800, fontSize: 15, color: profit >= 0 ? '#10b981' : '#ef4444' }}>{profit >= 0 ? '+' : ''}{formatCurrency(profit)}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text2)' }}>{profit >= 0 ? 'Profit' : 'Loss'}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text2)' }}>{profit >= 0 ? t('Profit') : t('Loss')}</div>
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 8 }}>
                     {[
-                      { label: 'Revenue', value: revenue, color: '#10b981' },
-                      { label: 'Expenses', value: totalExp, color: '#ef4444' },
+                      { label: t('Revenue'), value: revenue, color: '#10b981' },
+                      { label: t('Expenses'), value: totalExp, color: '#ef4444' },
                       { label: 'Margin', value: revenue > 0 ? Math.round((profit/revenue)*100) + '%' : '—', color: profit >= 0 ? '#3b82f6' : '#f97316', raw: true },
                     ].map(s => (
                       <div key={s.label} style={{ background: 'var(--surface2)', borderRadius: 8, padding: '8px 6px', textAlign: 'center' }}>
@@ -387,9 +389,9 @@ export default function Reports() {
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, margin: '16px 0 8px' }}>All-Time P&L Summary</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
               {[
-                { label: 'Total Revenue', value: formatCurrency(balanceSheet.summary.totalRevenue), color: '#10b981' },
-                { label: 'Total Expenses', value: formatCurrency(balanceSheet.summary.totalExpenses), color: '#ef4444' },
-                { label: balanceSheet.summary.netProfit >= 0 ? 'Net Profit' : 'Net Loss', value: formatCurrency(Math.abs(balanceSheet.summary.netProfit)), color: balanceSheet.summary.netProfit >= 0 ? '#10b981' : '#ef4444' },
+                { label: t('Total Revenue'), value: formatCurrency(balanceSheet.summary.totalRevenue), color: '#10b981' },
+                { label: t('Total Expenses'), value: formatCurrency(balanceSheet.summary.totalExpenses), color: '#ef4444' },
+                { label: balanceSheet.summary.netProfit >= 0 ? t('Net Profit') : 'Net Loss', value: formatCurrency(Math.abs(balanceSheet.summary.netProfit)), color: balanceSheet.summary.netProfit >= 0 ? '#10b981' : '#ef4444' },
               ].map(s => (
                 <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `2px solid ${s.color}`, borderRadius: 12, padding: '10px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: s.color }}>{s.value}</div>

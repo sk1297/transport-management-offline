@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import db from '../db/database.js'
+import { useT } from '../i18n/index.js'
 
 const ROLES = ['owner', 'manager', 'staff']
 const ROLE_CFG = {
@@ -15,6 +16,7 @@ const normalizeRole = (r) => (r || 'staff').toLowerCase()
 
 function StaffSheet({ open, onClose, onSaved, editing }) {
   const { show } = useToast()
+  const { t } = useT()
   const [form, setForm] = useState({ name: '', mobile: '', role: 'MANAGER', password: '' })
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
@@ -76,7 +78,7 @@ function StaffSheet({ open, onClose, onSaved, editing }) {
       <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
       <div style={{ position: 'relative', background: 'var(--surface)', borderRadius: '20px 20px 0 0', padding: 20, maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>{editing ? 'Edit Staff' : 'Add Staff'}</div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--text)' }}>{editing ? t('Edit Staff') : t('Add Staff')}</div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text2)' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -85,7 +87,7 @@ function StaffSheet({ open, onClose, onSaved, editing }) {
         {inp('mobile', 'Mobile (10 digits)', 'tel')}
         {inp('password', editing ? 'New Password (leave blank to keep)' : 'Password', 'password')}
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Role</label>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>{t('Role')}</label>
           <div style={{ display: 'flex', gap: 8 }}>
             {ROLES.map(r => (
               <button key={r} onClick={() => setForm(p => ({ ...p, role: r }))}
@@ -96,7 +98,7 @@ function StaffSheet({ open, onClose, onSaved, editing }) {
           </div>
         </div>
         <button onClick={handleSave} disabled={saving} className="btn btn-primary" style={{ width: '100%', padding: 14, marginTop: 8 }}>
-          {saving ? 'Saving...' : editing ? 'Update Staff' : 'Add Staff'}
+          {saving ? 'Saving...' : editing ? t('Save') : t('Add Staff')}
         </button>
       </div>
     </div>
@@ -107,6 +109,7 @@ export default function Staff() {
   const navigate = useNavigate()
   const { show } = useToast()
   const { user } = useAuth()
+  const { t } = useT()
   const [list, setList] = useState([])
   const [sheet, setSheet] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -152,13 +155,13 @@ export default function Staff() {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>Staff</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>{t('Staff')}</div>
           <div style={{ fontSize: 10, color: 'var(--text2)' }}>App users & access</div>
         </div>
         {normalizeRole(user?.role) === 'owner' && (
           <button onClick={() => { setEditing(null); setSheet(true) }} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add
+            {t('Add Staff')}
           </button>
         )}
       </div>
@@ -180,7 +183,7 @@ export default function Staff() {
                   <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{s.mobile}</div>
                   <div style={{ marginTop: 6 }}>
                     <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 20, fontSize: 10, fontWeight: 800, background: cfg.bg, color: cfg.color }}>{s.role}</span>
-                    {!s.isActive && <span style={{ marginLeft: 6, display: 'inline-block', padding: '2px 10px', borderRadius: 20, fontSize: 10, fontWeight: 800, background: 'rgba(239,68,68,0.15)', color: 'var(--red)' }}>INACTIVE</span>}
+                    {!s.isActive && <span style={{ marginLeft: 6, display: 'inline-block', padding: '2px 10px', borderRadius: 20, fontSize: 10, fontWeight: 800, background: 'rgba(239,68,68,0.15)', color: 'var(--red)' }}>{t('Inactive').toUpperCase()}</span>}
                   </div>
                 </div>
                 {normalizeRole(user?.role) === 'owner' && (
@@ -188,14 +191,14 @@ export default function Staff() {
                     <button onClick={() => { setEditing(s); setSheet(true) }} style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text2)' }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    <button onClick={() => toggleActive(s)} title={s.isActive ? 'Deactivate' : 'Activate'} style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${s.isActive ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, background: s.isActive ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: s.isActive ? 'var(--green)' : 'var(--red)' }}>
+                    <button onClick={() => toggleActive(s)} title={s.isActive ? t('Active') : t('Inactive')} style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${s.isActive ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, background: s.isActive ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: s.isActive ? 'var(--green)' : 'var(--red)' }}>
                       {s.isActive
                         ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
                         : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       }
                     </button>
                     {s.mobile !== user?.mobile && (
-                      <button onClick={() => handleDelete(s)} title="Delete" style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--red)' }}>
+                      <button onClick={() => handleDelete(s)} title={t('Delete')} style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--red)' }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                       </button>
                     )}

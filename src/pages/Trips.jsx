@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Share } from '@capacitor/share'
+import { useT } from '../i18n/index.js'
 import { getAll as getTrips, add as addTrip, update as updateTrip, remove as removeTrip, getWithLRs } from '../services/tripService.js'
 import { getAll as getLRs, add as addLR, update as updateLR, remove as removeLR, autoLRNumber, getByTrip } from '../services/lrService.js'
 import { getAll as getVehicles } from '../services/vehicleService.js'
@@ -79,6 +80,7 @@ function payTypeColor(t) {
 
 function TripForm({ open, onClose, onSaved, editing, vehicles, drivers }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { vehicle_id: '', driver_id: '', from_loc: '', to_loc: '', start_date: todayStr(), end_date: '', status: 'Planned', notes: '', est_freight: '', est_diesel: '', est_toll: '', est_bata: '', est_other: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -103,53 +105,53 @@ function TripForm({ open, onClose, onSaved, editing, vehicles, drivers }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Trip' : 'New Trip'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit Trip') : t('Add Trip')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
             {saving ? <span className="spinner spinner-sm" /> : null}
-            {editing ? 'Update' : 'Create Trip'}
+            {editing ? t('Update') : t('Create Trip')}
           </button>
         </>
       }
     >
       <div className="form-group">
-        <label className="form-label">Vehicle</label>
+        <label className="form-label">{t('Vehicle')}</label>
         <select className="form-input" value={form.vehicle_id} onChange={e => f('vehicle_id', e.target.value)}>
           <option value="">— Select Vehicle —</option>
           {vehicles.map(v => <option key={v.id} value={v.id}>{v.name} ({v.reg_no})</option>)}
         </select>
       </div>
       <div className="form-group">
-        <label className="form-label">Driver</label>
+        <label className="form-label">{t('Driver')}</label>
         <select className="form-input" value={form.driver_id} onChange={e => f('driver_id', e.target.value)}>
           <option value="">— Select Driver —</option>
           {drivers.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">From</label><input className="form-input" value={form.from_loc} onChange={e => f('from_loc', e.target.value)} placeholder="Origin" /></div>
-        <div className="form-group"><label className="form-label">To</label><input className="form-input" value={form.to_loc} onChange={e => f('to_loc', e.target.value)} placeholder="Destination" /></div>
+        <div className="form-group"><label className="form-label">{t('From')}</label><input className="form-input" value={form.from_loc} onChange={e => f('from_loc', e.target.value)} placeholder="Origin" /></div>
+        <div className="form-group"><label className="form-label">{t('To')}</label><input className="form-input" value={form.to_loc} onChange={e => f('to_loc', e.target.value)} placeholder="Destination" /></div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Start Date</label><input className="form-input" type="date" value={form.start_date} onChange={e => f('start_date', e.target.value)} /></div>
-        <div className="form-group"><label className="form-label">End Date</label><input className="form-input" type="date" value={form.end_date || ''} onChange={e => f('end_date', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Start Date')}</label><input className="form-input" type="date" value={form.start_date} onChange={e => f('start_date', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('End Date')}</label><input className="form-input" type="date" value={form.end_date || ''} onChange={e => f('end_date', e.target.value)} /></div>
       </div>
       <div className="form-group">
-        <label className="form-label">Status</label>
+        <label className="form-label">{t('Status')}</label>
         <select className="form-input" value={form.status} onChange={e => f('status', e.target.value)}>
           {TRIP_STATUSES.map(s => <option key={s}>{s}</option>)}
         </select>
       </div>
-      <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={form.notes || ''} onChange={e => f('notes', e.target.value)} placeholder="Optional notes" /></div>
+      <div className="form-group"><label className="form-label">{t('Notes')}</label><input className="form-input" value={form.notes || ''} onChange={e => f('notes', e.target.value)} placeholder="Optional notes" /></div>
 
       {/* Profit Estimator */}
       <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 4 }}>
         <button type="button" onClick={() => setShowEstimator(s => !s)}
           style={{ background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: 0 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6"/><path d="M15 19V9a2 2 0 00-2-2H9a2 2 0 00-2 2"/><path d="M21 19V3"/></svg>
-          {showEstimator ? 'Hide Estimator' : 'Profit Estimator'}
+          {showEstimator ? t('Hide Estimator') : t('Profit Estimator')}
         </button>
         {showEstimator && (() => {
           const freight = Number(form.est_freight) || 0
@@ -158,19 +160,19 @@ function TripForm({ open, onClose, onSaved, editing, vehicles, drivers }) {
           return (
             <div style={{ marginTop: 10 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <div className="form-group"><label className="form-label">Expected Freight ₹</label><input className="form-input" type="number" value={form.est_freight} onChange={e => f('est_freight', e.target.value)} placeholder="0"/></div>
-                <div className="form-group"><label className="form-label">Est. Diesel ₹</label><input className="form-input" type="number" value={form.est_diesel} onChange={e => f('est_diesel', e.target.value)} placeholder="0"/></div>
-                <div className="form-group"><label className="form-label">Est. Toll ₹</label><input className="form-input" type="number" value={form.est_toll} onChange={e => f('est_toll', e.target.value)} placeholder="0"/></div>
-                <div className="form-group"><label className="form-label">Driver Bata ₹</label><input className="form-input" type="number" value={form.est_bata} onChange={e => f('est_bata', e.target.value)} placeholder="0"/></div>
+                <div className="form-group"><label className="form-label">{t('Est. Freight')} ₹</label><input className="form-input" type="number" value={form.est_freight} onChange={e => f('est_freight', e.target.value)} placeholder="0"/></div>
+                <div className="form-group"><label className="form-label">{t('Est. Diesel')} ₹</label><input className="form-input" type="number" value={form.est_diesel} onChange={e => f('est_diesel', e.target.value)} placeholder="0"/></div>
+                <div className="form-group"><label className="form-label">{t('Est. Toll')} ₹</label><input className="form-input" type="number" value={form.est_toll} onChange={e => f('est_toll', e.target.value)} placeholder="0"/></div>
+                <div className="form-group"><label className="form-label">{t('Est. Driver Bata')} ₹</label><input className="form-input" type="number" value={form.est_bata} onChange={e => f('est_bata', e.target.value)} placeholder="0"/></div>
               </div>
-              <div className="form-group"><label className="form-label">Other Costs ₹</label><input className="form-input" type="number" value={form.est_other} onChange={e => f('est_other', e.target.value)} placeholder="0"/></div>
+              <div className="form-group"><label className="form-label">{t('Est. Others')} ₹</label><input className="form-input" type="number" value={form.est_other} onChange={e => f('est_other', e.target.value)} placeholder="0"/></div>
               <div style={{ background: profit >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${profit >= 0 ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 12, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: 11, color: 'var(--text2)' }}>Freight {formatCurrency(freight)} − Costs {formatCurrency(costs)}</div>
                   <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>Margin: {freight > 0 ? Math.round((profit/freight)*100) + '%' : '—'}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: 'var(--text2)', textAlign: 'right' }}>Est. Profit</div>
+                  <div style={{ fontSize: 10, color: 'var(--text2)', textAlign: 'right' }}>{t('Expected Profit')}</div>
                   <div style={{ fontSize: 18, fontWeight: 800, color: profit >= 0 ? '#10b981' : '#ef4444' }}>{profit >= 0 ? '+' : ''}{formatCurrency(profit)}</div>
                 </div>
               </div>
@@ -184,6 +186,7 @@ function TripForm({ open, onClose, onSaved, editing, vehicles, drivers }) {
 
 function LRForm({ open, onClose, onSaved, editing, tripId, trips }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { lr_no: '', date: todayStr(), consignor: '', consignee: '', from: '', to: '', goods_desc: '', weight: '', packages: '', freight: '', pay_type: 'To-Pay', status: 'Created', trip_id: tripId || '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -215,26 +218,26 @@ function LRForm({ open, onClose, onSaved, editing, tripId, trips }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit LR / Bilty' : 'Create LR / Bilty'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('LR / Bilty') : t('Add LR')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
             {saving ? <span className="spinner spinner-sm" /> : null}
-            {editing ? 'Update' : 'Create LR'}
+            {editing ? t('Update') : t('Create LR')}
           </button>
         </>
       }
     >
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">LR No.</label><input className="form-input" value={form.lr_no || ''} onChange={e => f('lr_no', e.target.value)} placeholder="LR-2026-001" /></div>
-        <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date || ''} onChange={e => f('date', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('LR Number')}</label><input className="form-input" value={form.lr_no || ''} onChange={e => f('lr_no', e.target.value)} placeholder="LR-2026-001" /></div>
+        <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={form.date || ''} onChange={e => f('date', e.target.value)} /></div>
       </div>
-      <div className="form-group"><label className="form-label">Consignor (Sender)</label><input className="form-input" value={form.consignor || ''} onChange={e => f('consignor', e.target.value)} placeholder="Sender name" /></div>
-      <div className="form-group"><label className="form-label">Consignee (Receiver)</label><input className="form-input" value={form.consignee || ''} onChange={e => f('consignee', e.target.value)} placeholder="Receiver name" /></div>
+      <div className="form-group"><label className="form-label">{t('Consignor')}</label><input className="form-input" value={form.consignor || ''} onChange={e => f('consignor', e.target.value)} placeholder="Sender name" /></div>
+      <div className="form-group"><label className="form-label">{t('Consignee')}</label><input className="form-input" value={form.consignee || ''} onChange={e => f('consignee', e.target.value)} placeholder="Receiver name" /></div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">From</label><input className="form-input" value={form.from || ''} onChange={e => { f('from', e.target.value); setDistKm(null) }} placeholder="Origin" /></div>
-        <div className="form-group"><label className="form-label">To</label><input className="form-input" value={form.to || ''} onChange={e => { f('to', e.target.value); setDistKm(null) }} placeholder="Destination" /></div>
+        <div className="form-group"><label className="form-label">{t('From')}</label><input className="form-input" value={form.from || ''} onChange={e => { f('from', e.target.value); setDistKm(null) }} placeholder="Origin" /></div>
+        <div className="form-group"><label className="form-label">{t('To')}</label><input className="form-input" value={form.to || ''} onChange={e => { f('to', e.target.value); setDistKm(null) }} placeholder="Destination" /></div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, marginTop: -4 }}>
         <button type="button" disabled={distLoading || !form.from || !form.to}
@@ -250,21 +253,21 @@ function LRForm({ open, onClose, onSaved, editing, tripId, trips }) {
         </button>
         {distKm && <span style={{ fontSize: 12, color: '#10b981', fontWeight: 700 }}>~{distKm} km via road</span>}
       </div>
-      <div className="form-group"><label className="form-label">Goods Description</label><input className="form-input" value={form.goods_desc || ''} onChange={e => f('goods_desc', e.target.value)} placeholder="Description of goods" /></div>
+      <div className="form-group"><label className="form-label">{t('Material')}</label><input className="form-input" value={form.goods_desc || ''} onChange={e => f('goods_desc', e.target.value)} placeholder="Description of goods" /></div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Weight (kg)</label><input className="form-input" type="number" value={form.weight || ''} onChange={e => f('weight', e.target.value)} /></div>
-        <div className="form-group"><label className="form-label">Packages</label><input className="form-input" type="number" value={form.packages || ''} onChange={e => f('packages', e.target.value)} /></div>
-        <div className="form-group"><label className="form-label">Freight ₹</label><input className="form-input" type="number" value={form.freight || ''} onChange={e => f('freight', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Weight (kg)')}</label><input className="form-input" type="number" value={form.weight || ''} onChange={e => f('weight', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Packages')}</label><input className="form-input" type="number" value={form.packages || ''} onChange={e => f('packages', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Freight')} ₹</label><input className="form-input" type="number" value={form.freight || ''} onChange={e => f('freight', e.target.value)} /></div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div className="form-group">
-          <label className="form-label">Pay Type</label>
+          <label className="form-label">{t('Pay Type')}</label>
           <select className="form-input" value={form.pay_type} onChange={e => f('pay_type', e.target.value)}>
             {LR_PAY_TYPES.map(t => <option key={t}>{t}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label">Status</label>
+          <label className="form-label">{t('Status')}</label>
           <select className="form-input" value={form.status} onChange={e => f('status', e.target.value)}>
             {LR_STATUSES.map(s => <option key={s}>{s}</option>)}
           </select>
@@ -272,7 +275,7 @@ function LRForm({ open, onClose, onSaved, editing, tripId, trips }) {
       </div>
       {trips && trips.length > 0 && (
         <div className="form-group">
-          <label className="form-label">Assign to Trip (Optional)</label>
+          <label className="form-label">{t('Assign to Trip (Optional)')}</label>
           <select className="form-input" value={form.trip_id} onChange={e => f('trip_id', e.target.value)}>
             <option value="">— No Trip —</option>
             {trips.map(t => <option key={t.id} value={t.id}>{t.from_loc} → {t.to_loc} ({t.status})</option>)}
@@ -285,6 +288,7 @@ function LRForm({ open, onClose, onSaved, editing, tripId, trips }) {
 
 function TripDetail({ trip, vehicles, drivers, trips, onBack, onRefresh }) {
   const { show } = useToast()
+  const { t } = useT()
   const [detail, setDetail] = useState(null)
   const [lrModal, setLrModal] = useState(false)
   const [editingLR, setEditingLR] = useState(null)
@@ -334,8 +338,8 @@ function TripDetail({ trip, vehicles, drivers, trips, onBack, onRefresh }) {
       <Header title={`${trip.from_loc} → ${trip.to_loc}`} onBack={onBack}
         rightAction={
           <div style={{ display: 'flex', gap: 6 }}>
-            <button className="btn btn-secondary btn-sm" onClick={() => setEditTripModal(true)}>Edit</button>
-            <button className="btn btn-primary btn-sm" onClick={() => { setEditingLR(null); setLrModal(true) }}>+ LR</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setEditTripModal(true)}>{t('Edit')}</button>
+            <button className="btn btn-primary btn-sm" onClick={() => { setEditingLR(null); setLrModal(true) }}>+ {t('Add LR')}</button>
           </div>
         }
       />
@@ -368,9 +372,9 @@ function TripDetail({ trip, vehicles, drivers, trips, onBack, onRefresh }) {
         <div style={{ display: 'flex', gap: 4, marginBottom: 14, overflowX: 'auto', scrollbarWidth: 'none' }}>
           {[
             { id: 'lrs', label: `LRs (${detail?.lrs?.length || 0})` },
-            { id: 'milestones', label: 'Milestones' },
-            { id: 'checklist', label: `Checklist (${checklist.filter(c=>c.checked).length}/${checklist.length})` },
-            { id: 'load', label: 'Load Plan' },
+            { id: 'milestones', label: t('Milestones') },
+            { id: 'checklist', label: `${t('Checklist')} (${checklist.filter(c=>c.checked).length}/${checklist.length})` },
+            { id: 'load', label: t('Load Plan') },
           ].map(t => (
             <button key={t.id} className={`filter-chip${detailTab===t.id?' active':''}`} onClick={() => setDetailTab(t.id)} style={{ whiteSpace: 'nowrap' }}>{t.label}</button>
           ))}
@@ -379,9 +383,9 @@ function TripDetail({ trip, vehicles, drivers, trips, onBack, onRefresh }) {
         {detailTab === 'lrs' && (!detail?.lrs || detail.lrs.length === 0) && (
           <div className="empty">
             <div className="empty-icon">📋</div>
-            <div className="empty-title">No LRs yet</div>
-            <div className="empty-desc">Add LRs to this trip</div>
-            <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => { setEditingLR(null); setLrModal(true) }}>+ Create LR</button>
+            <div className="empty-title">{t('No LRs yet')}</div>
+            <div className="empty-desc">{t('Add LRs to this trip')}</div>
+            <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => { setEditingLR(null); setLrModal(true) }}>+ {t('Add LR')}</button>
           </div>
         )}
         {detailTab === 'lrs' && detail?.lrs?.map((lr) => {
@@ -464,7 +468,7 @@ function TripDetail({ trip, vehicles, drivers, trips, onBack, onRefresh }) {
                 ))}
               </div>
             ) : (
-              <div style={{ fontSize: 12, color: 'var(--text2)', textAlign: 'center', padding: '20px 0' }}>No milestones yet</div>
+              <div style={{ fontSize: 12, color: 'var(--text2)', textAlign: 'center', padding: '20px 0' }}>{t('No milestones yet')}</div>
             )}
           </>
         )}
@@ -488,7 +492,7 @@ function TripDetail({ trip, vehicles, drivers, trips, onBack, onRefresh }) {
             <div style={{ display: 'flex', gap: 8 }}>
               <input className="form-input" value={newCheckItem} onChange={e => setNewCheckItem(e.target.value)} placeholder="Add custom item..." style={{ flex: 1 }}
                 onKeyDown={async e => { if (e.key === 'Enter' && newCheckItem.trim()) { await addChecklistItem(trip.id, newCheckItem.trim()); setNewCheckItem(''); loadChecklist() } }} />
-              <button className="btn btn-primary btn-sm" onClick={async () => { if (newCheckItem.trim()) { await addChecklistItem(trip.id, newCheckItem.trim()); setNewCheckItem(''); loadChecklist() } }}>Add</button>
+              <button className="btn btn-primary btn-sm" onClick={async () => { if (newCheckItem.trim()) { await addChecklistItem(trip.id, newCheckItem.trim()); setNewCheckItem(''); loadChecklist() } }}>{t('Add')}</button>
             </div>
             <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 10, textAlign: 'center' }}>
               {checklist.filter(c => c.checked).length} of {checklist.length} items completed
@@ -532,7 +536,7 @@ function TripDetail({ trip, vehicles, drivers, trips, onBack, onRefresh }) {
                     </div>
                   ))}
                   <div style={{ background: 'var(--surface2)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
-                    <span style={{ color: 'var(--text2)', fontSize: 12 }}>Total Load</span>
+                    <span style={{ color: 'var(--text2)', fontSize: 12 }}>{t('Total Load')}</span>
                     <span style={{ color: 'var(--text)', fontSize: 14 }}>{totalWeight} kg</span>
                   </div>
                 </>
@@ -544,24 +548,24 @@ function TripDetail({ trip, vehicles, drivers, trips, onBack, onRefresh }) {
 
       <LRForm open={lrModal} onClose={() => setLrModal(false)} onSaved={loadDetail} editing={editingLR} tripId={trip.id} trips={trips} />
       <TripForm open={editTripModal} onClose={() => setEditTripModal(false)} onSaved={() => { onRefresh(); onBack() }} editing={trip} vehicles={vehicles} drivers={drivers} />
-      <Modal isOpen={mlModal} onClose={() => setMlModal(false)} title="Add Milestone"
+      <Modal isOpen={mlModal} onClose={() => setMlModal(false)} title={t('Add Milestone')}
         footer={<>
-          <button className="btn btn-secondary flex-1" onClick={() => setMlModal(false)}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={() => setMlModal(false)}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={async () => {
             await addMilestone({ trip_id: trip.id, ...mlForm, km_reading: Number(mlForm.km_reading) || 0 })
             show('Milestone added!', 'success'); setMlModal(false); loadMilestones()
-          }}>Add</button>
+          }}>{t('Add')}</button>
         </>}
       >
         <div className="form-group">
-          <label className="form-label">Stage</label>
+          <label className="form-label">{t('Stage')}</label>
           <select className="form-input" value={mlForm.stage} onChange={e => setMlForm(p => ({ ...p, stage: e.target.value }))}>
             {STAGES.map(s => <option key={s}>{s}</option>)}
           </select>
         </div>
-        <div className="form-group"><label className="form-label">Location (Optional)</label><input className="form-input" value={mlForm.location} onChange={e => setMlForm(p => ({ ...p, location: e.target.value }))} placeholder="City or place name" /></div>
-        <div className="form-group"><label className="form-label">KM Reading (Optional)</label><input className="form-input" type="number" value={mlForm.km_reading} onChange={e => setMlForm(p => ({ ...p, km_reading: e.target.value }))} /></div>
-        <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={mlForm.notes} onChange={e => setMlForm(p => ({ ...p, notes: e.target.value }))} placeholder="Any notes" /></div>
+        <div className="form-group"><label className="form-label">{t('Location (Optional)')}</label><input className="form-input" value={mlForm.location} onChange={e => setMlForm(p => ({ ...p, location: e.target.value }))} placeholder="City or place name" /></div>
+        <div className="form-group"><label className="form-label">{t('KM Reading (Optional)')}</label><input className="form-input" type="number" value={mlForm.km_reading} onChange={e => setMlForm(p => ({ ...p, km_reading: e.target.value }))} /></div>
+        <div className="form-group"><label className="form-label">{t('Notes')}</label><input className="form-input" value={mlForm.notes} onChange={e => setMlForm(p => ({ ...p, notes: e.target.value }))} placeholder="Any notes" /></div>
       </Modal>
     </>
   )
@@ -569,6 +573,7 @@ function TripDetail({ trip, vehicles, drivers, trips, onBack, onRefresh }) {
 
 export default function Trips() {
   const { show } = useToast()
+  const { t } = useT()
   const [mainTab, setMainTab] = useState('trips')
   const [trips, setTrips]     = useState([])
   const [allLRs, setAllLRs]   = useState([])
@@ -625,14 +630,14 @@ export default function Trips() {
 
   return (
     <>
-      <Header title="Trips & LR / Bilty"
+      <Header title={t('Trips')}
         rightAction={
           <button className="btn btn-primary btn-sm" onClick={() => {
             if (mainTab === 'trips') { setEditingTrip(null); setTripModal(true) }
             else { setEditingLR(null); setLrModal(true) }
           }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add
+            {t('Add')}
           </button>
         }
       />
@@ -641,11 +646,11 @@ export default function Trips() {
         <div className="tabs">
           <button className={`tab${mainTab === 'trips' ? ' active' : ''}`} onClick={() => setMainTab('trips')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-            Trips
+            {t('Trips')}
           </button>
           <button className={`tab${mainTab === 'lr' ? ' active' : ''}`} onClick={() => setMainTab('lr')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 10h8M8 14h5"/></svg>
-            LR / Bilty
+            {t('LR / Bilty')}
           </button>
         </div>
 
@@ -684,9 +689,9 @@ export default function Trips() {
             {!loading && filteredTrips.length === 0 && (
               <div className="empty">
                 <div className="empty-icon">🚚</div>
-                <div className="empty-title">No trips found</div>
-                <div className="empty-desc">{search || filter !== 'All' ? 'No results for current filter' : 'Start by creating a new trip'}</div>
-                {!search && filter === 'All' && <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => { setEditingTrip(null); setTripModal(true) }}>+ New Trip</button>}
+                <div className="empty-title">{t('No trips found')}</div>
+                <div className="empty-desc">{search || filter !== 'All' ? t('No results for current filter') : t('Start by creating a new trip')}</div>
+                {!search && filter === 'All' && <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => { setEditingTrip(null); setTripModal(true) }}>+ {t('Add Trip')}</button>}
               </div>
             )}
 
@@ -762,9 +767,9 @@ export default function Trips() {
             {!loading && filteredLRs.length === 0 && (
               <div className="empty">
                 <div className="empty-icon">📋</div>
-                <div className="empty-title">No LRs found</div>
-                <div className="empty-desc">Create your first LR / Bilty</div>
-                <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => { setEditingLR(null); setLrModal(true) }}>+ Create LR</button>
+                <div className="empty-title">{t('No LRs found')}</div>
+                <div className="empty-desc">{t('Create your first LR / Bilty')}</div>
+                <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => { setEditingLR(null); setLrModal(true) }}>+ {t('Add LR')}</button>
               </div>
             )}
 

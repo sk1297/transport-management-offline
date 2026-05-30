@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getByMonth, add, remove, getByDate } from '../services/rosterService.js'
 import { getAll as getDrivers } from '../services/driverService.js'
 import { getAll as getVehicles } from '../services/vehicleService.js'
@@ -56,6 +57,7 @@ function fmtDayLabel(dateObj) {
 export default function DriverRoster() {
   const navigate = useNavigate()
   const { show }  = useToast()
+  const { t } = useT()
 
   const today = new Date()
   const [month, setMonth]   = useState(today.getMonth() + 1)
@@ -139,7 +141,7 @@ export default function DriverRoster() {
 
   return (
     <>
-      <Header title="Driver Roster" onBack={() => navigate(-1)} />
+      <Header title={t('Driver Roster')} onBack={() => navigate(-1)} />
       <div className="page">
 
         {/* Month Navigation */}
@@ -214,11 +216,11 @@ export default function DriverRoster() {
 
             {/* Summary Section */}
             <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>Monthly Summary</div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>{t('Monthly Schedule')}</div>
               {Object.keys(driverSummary).length === 0 ? (
                 <div className="empty" style={{ padding: '20px 0' }}>
                   <div className="empty-icon">📅</div>
-                  <div className="empty-title">No assignments yet</div>
+                  <div className="empty-title">{t('No data found')}</div>
                   <div className="empty-desc">Tap any day on the calendar to assign a driver</div>
                 </div>
               ) : (
@@ -256,9 +258,9 @@ export default function DriverRoster() {
         title={selectedDate ? `Assign — ${fmtDayLabel(selectedDate)}` : 'Assign'}
         footer={
           <>
-            <button className="btn btn-secondary flex-1" onClick={() => setAssignModal(false)}>Close</button>
+            <button className="btn btn-secondary flex-1" onClick={() => setAssignModal(false)}>{t('Cancel')}</button>
             <button className="btn btn-primary flex-1" onClick={handleAssign} disabled={saving}>
-              {saving ? <span className="spinner spinner-sm" /> : 'Assign'}
+              {saving ? <span className="spinner spinner-sm" /> : t('Assign Driver')}
             </button>
           </>
         }

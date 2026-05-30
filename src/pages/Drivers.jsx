@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { useT } from '../i18n/index.js'
 import { getAll, add, update, remove } from '../services/driverService.js'
 import { getByDriver, markAttendance, getMonthlySummary, addSalary, getAllSalaries, addAdvance, getAdvances } from '../services/attendanceService.js'
 import { useToast } from '../context/ToastContext.jsx'
@@ -9,6 +10,7 @@ import Header from '../components/Header.jsx'
 const DRIVER_STATUSES = ['Active', 'On Trip', 'Inactive']
 
 function DriverForm({ open, onClose, onSaved, editing }) {
+  const { t } = useT()
   const { show } = useToast()
   const blank = { name: '', phone: '', license_no: '', license_expiry: '', medical_expiry: '', badge_expiry: '', emergency_contact: '', blood_group: '', address: '', join_date: todayStr(), status: 'Active' }
   const [form, setForm] = useState(blank)
@@ -48,13 +50,13 @@ function DriverForm({ open, onClose, onSaved, editing }) {
   )
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Driver' : 'Add Driver'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit Driver') : t('Add Driver')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
             {saving ? <span className="spinner spinner-sm" /> : null}
-            {editing ? 'Update' : 'Add Driver'}
+            {editing ? t('Update') : t('Add Driver')}
           </button>
         </>
       }
@@ -285,6 +287,7 @@ function AttendanceCalendar({ driverId, month, year, onMonthChange }) {
 }
 
 function SalaryView({ driver, onBack }) {
+  const { t } = useT()
   const { show } = useToast()
   const [salaries, setSalaries] = useState([])
   const [advances, setAdvances] = useState([])
@@ -355,8 +358,8 @@ function SalaryView({ driver, onBack }) {
       />
       <div className="page">
         <div className="tabs" style={{ marginBottom: 14 }}>
-          <button className={`tab${detailTab === 'salary' ? ' active' : ''}`} onClick={() => setDetailTab('salary')}>Salary</button>
-          <button className={`tab${detailTab === 'attendance' ? ' active' : ''}`} onClick={() => setDetailTab('attendance')}>Attendance</button>
+          <button className={`tab${detailTab === 'salary' ? ' active' : ''}`} onClick={() => setDetailTab('salary')}>{t('Salary')}</button>
+          <button className={`tab${detailTab === 'attendance' ? ' active' : ''}`} onClick={() => setDetailTab('attendance')}>{t('Attendance')}</button>
         </div>
 
         {detailTab === 'attendance' && (
@@ -386,7 +389,7 @@ function SalaryView({ driver, onBack }) {
           ))}
         </div>
 
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Salary History</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>{t('Salary History')}</div>
         {salaries.length === 0 ? (
           <div className="empty"><div className="empty-icon">💰</div><div className="empty-title">No salary records</div><div className="empty-desc">Add first salary entry</div></div>
         ) : salaries.map(s => (
@@ -409,9 +412,9 @@ function SalaryView({ driver, onBack }) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
               {[
-                { label: 'Basic', value: formatCurrency(s.basic) },
-                { label: 'Allowance', value: formatCurrency(s.allowance) },
-                { label: 'Advance Ded.', value: formatCurrency(s.advance_deducted) },
+                { label: t('Basic'), value: formatCurrency(s.basic) },
+                { label: t('Allowance'), value: formatCurrency(s.allowance) },
+                { label: t('Advance Ded.'), value: formatCurrency(s.advance_deducted) },
               ].map(r => (
                 <div key={r.label} style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{r.value}</div>
@@ -442,12 +445,12 @@ function SalaryView({ driver, onBack }) {
       </div>
 
       {/* Salary Modal */}
-      <Modal isOpen={salModal} onClose={() => setSalModal(false)} title="Add Salary"
+      <Modal isOpen={salModal} onClose={() => setSalModal(false)} title={t('Add Salary')}
         footer={
           <>
-            <button className="btn btn-secondary flex-1" onClick={() => setSalModal(false)}>Cancel</button>
+            <button className="btn btn-secondary flex-1" onClick={() => setSalModal(false)}>{t('Cancel')}</button>
             <button className="btn btn-primary flex-1" onClick={handleSaveSalary} disabled={saving}>
-              {saving ? <span className="spinner spinner-sm" /> : 'Save Salary'}
+              {saving ? <span className="spinner spinner-sm" /> : t('Save Salary')}
             </button>
           </>
         }
@@ -484,18 +487,18 @@ function SalaryView({ driver, onBack }) {
         <div className="form-group"><label className="form-label">Allowance ₹</label><input className="form-input" type="number" value={salForm.allowance} onChange={e => setSalForm(p => ({ ...p, allowance: e.target.value }))} placeholder="0" /></div>
         <div className="form-group"><label className="form-label">Advance Deducted ₹</label><input className="form-input" type="number" value={salForm.advance_deducted} onChange={e => setSalForm(p => ({ ...p, advance_deducted: e.target.value }))} placeholder="0" /></div>
         <div style={{ background: 'var(--surface2)', borderRadius: 12, padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)' }}>
-          <span style={{ fontWeight: 700, color: 'var(--text2)', fontSize: 13 }}>Net Payable</span>
+          <span style={{ fontWeight: 700, color: 'var(--text2)', fontSize: 13 }}>{t('Net Pay')}</span>
           <span style={{ fontWeight: 800, fontSize: 18, color: '#10b981' }}>{formatCurrency(netSalary)}</span>
         </div>
       </Modal>
 
       {/* Advance Modal */}
-      <Modal isOpen={advModal} onClose={() => setAdvModal(false)} title="Record Advance"
+      <Modal isOpen={advModal} onClose={() => setAdvModal(false)} title={t('Record Advance')}
         footer={
           <>
-            <button className="btn btn-secondary flex-1" onClick={() => setAdvModal(false)}>Cancel</button>
+            <button className="btn btn-secondary flex-1" onClick={() => setAdvModal(false)}>{t('Cancel')}</button>
             <button className="btn btn-primary flex-1" onClick={handleSaveAdvance} disabled={saving}>
-              {saving ? <span className="spinner spinner-sm" /> : 'Save'}
+              {saving ? <span className="spinner spinner-sm" /> : t('Save')}
             </button>
           </>
         }
@@ -544,6 +547,7 @@ function printSalarySlip(driver, salaryRecord, month, year, present, absent) {
 }
 
 export default function Drivers() {
+  const { t } = useT()
   const { show } = useToast()
   const [mainTab, setMainTab] = useState('drivers')
   const [drivers, setDrivers]   = useState([])
@@ -580,7 +584,7 @@ export default function Drivers() {
 
   return (
     <>
-      <Header title="Drivers"
+      <Header title={t('Driver')}
         rightAction={
           <button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModalOpen(true) }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -605,9 +609,9 @@ export default function Drivers() {
 
         {/* Tabs */}
         <div className="tabs">
-          <button className={`tab${mainTab === 'drivers' ? ' active' : ''}`} onClick={() => setMainTab('drivers')}>Drivers</button>
-          <button className={`tab${mainTab === 'attendance' ? ' active' : ''}`} onClick={() => setMainTab('attendance')}>Attendance</button>
-          <button className={`tab${mainTab === 'salary' ? ' active' : ''}`} onClick={() => setMainTab('salary')}>Salary</button>
+          <button className={`tab${mainTab === 'drivers' ? ' active' : ''}`} onClick={() => setMainTab('drivers')}>{t('Driver')}</button>
+          <button className={`tab${mainTab === 'attendance' ? ' active' : ''}`} onClick={() => setMainTab('attendance')}>{t('Attendance')}</button>
+          <button className={`tab${mainTab === 'salary' ? ' active' : ''}`} onClick={() => setMainTab('salary')}>{t('Salary')}</button>
         </div>
 
         {mainTab === 'drivers' && (
@@ -621,9 +625,9 @@ export default function Drivers() {
             {!loading && filtered.length === 0 && (
               <div className="empty">
                 <div className="empty-icon">👤</div>
-                <div className="empty-title">No drivers found</div>
-                <div className="empty-desc">Add your first driver</div>
-                <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => { setEditing(null); setModalOpen(true) }}>+ Add Driver</button>
+                <div className="empty-title">{t('No drivers found')}</div>
+                <div className="empty-desc">{t('Add your first driver')}</div>
+                <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => { setEditing(null); setModalOpen(true) }}>+ {t('Add Driver')}</button>
               </div>
             )}
 
@@ -730,10 +734,10 @@ export default function Drivers() {
                   {/* Action bar */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', borderTop: '1px solid var(--border)' }}>
                     {[
-                      { label: 'Attendance', color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, action: () => setViewAttendance(d) },
-                      { label: 'Salary', color: '#10b981', bg: 'rgba(16,185,129,0.08)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>, action: () => setViewSalary(d) },
-                      { label: 'Edit', color: 'var(--text2)', bg: 'transparent', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>, action: () => { setEditing(d); setModalOpen(true) } },
-                      { label: 'Delete', color: '#ef4444', bg: 'rgba(239,68,68,0.06)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>, action: () => handleDelete(d) },
+                      { label: t('Attendance'), color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, action: () => setViewAttendance(d) },
+                      { label: t('Salary'), color: '#10b981', bg: 'rgba(16,185,129,0.08)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>, action: () => setViewSalary(d) },
+                      { label: t('Edit'), color: 'var(--text2)', bg: 'transparent', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>, action: () => { setEditing(d); setModalOpen(true) } },
+                      { label: t('Delete'), color: '#ef4444', bg: 'rgba(239,68,68,0.06)', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>, action: () => handleDelete(d) },
                     ].map((btn, i) => (
                       <button key={btn.label} onClick={btn.action} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '10px 4px', border: 'none', borderLeft: i > 0 ? '1px solid var(--border)' : 'none', background: btn.bg, color: btn.color, cursor: 'pointer', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4 }}>
                         {btn.icon}

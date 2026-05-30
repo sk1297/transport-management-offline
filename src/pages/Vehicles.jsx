@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll, add, update, remove } from '../services/vehicleService.js'
 import { getByVehicle as getDocs, add as addDoc, remove as removeDoc, DOC_TYPES } from '../services/vehicleDocService.js'
 import { getByVehicle as getKmLogs, add as addKmLog, remove as removeKmLog, PURPOSES } from '../services/kmLogService.js'
@@ -41,6 +42,7 @@ function typeColor(t) {
 
 function VehicleForm({ open, onClose, onSaved, editing }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { name: '', type: 'Truck', reg_no: '', owner: '', insurance_expiry: '', puc_expiry: '', next_service_km: '', current_km: '', status: 'Active', fitness_expiry: '', national_permit_expiry: '', state_permit_expiry: '', capacity_kg: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -79,45 +81,45 @@ function VehicleForm({ open, onClose, onSaved, editing }) {
   )
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Vehicle' : 'Add Vehicle'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit Vehicle') : t('Add Vehicle')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
             {saving ? <span className="spinner spinner-sm" /> : null}
-            {editing ? 'Update' : 'Add Vehicle'}
+            {editing ? t('Update') : t('Add Vehicle')}
           </button>
         </>
       }
     >
-      {inp('name', 'Vehicle Name', { placeholder: 'e.g. Tata 407' })}
+      {inp('name', t('Vehicle'), { placeholder: 'e.g. Tata 407' })}
       <div className="form-group">
-        <label className="form-label">Type</label>
+        <label className="form-label">{t('Vehicle Type')}</label>
         <select className="form-input" value={form.type} onChange={e => f('type', e.target.value)}>
           {VEHICLE_TYPES.map(t => <option key={t}>{t}</option>)}
         </select>
       </div>
-      {inp('reg_no', 'Registration No.', { placeholder: 'MH 12 AB 1234' })}
-      {inp('owner', 'Owner Name', { placeholder: 'Owner name' })}
+      {inp('reg_no', t('Registration No'), { placeholder: 'MH 12 AB 1234' })}
+      {inp('owner', t('Owner Name'), { placeholder: 'Owner name' })}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Insurance Expiry</label><input className="form-input" type="date" value={form.insurance_expiry || ''} onChange={e => f('insurance_expiry', e.target.value)} /></div>
-        <div className="form-group"><label className="form-label">PUC Expiry</label><input className="form-input" type="date" value={form.puc_expiry || ''} onChange={e => f('puc_expiry', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Insurance Expiry')}</label><input className="form-input" type="date" value={form.insurance_expiry || ''} onChange={e => f('insurance_expiry', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('PUC Expiry')}</label><input className="form-input" type="date" value={form.puc_expiry || ''} onChange={e => f('puc_expiry', e.target.value)} /></div>
       </div>
       <div style={{ marginTop: 4, marginBottom: 6 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Fitness &amp; Permits</div>
+        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{t('Fitness & Permits')}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div className="form-group"><label className="form-label">Fitness Certificate Expiry</label><input className="form-input" type="date" value={form.fitness_expiry || ''} onChange={e => f('fitness_expiry', e.target.value)} /></div>
-          <div className="form-group"><label className="form-label">National Permit Expiry</label><input className="form-input" type="date" value={form.national_permit_expiry || ''} onChange={e => f('national_permit_expiry', e.target.value)} /></div>
-          <div className="form-group"><label className="form-label">State Permit Expiry</label><input className="form-input" type="date" value={form.state_permit_expiry || ''} onChange={e => f('state_permit_expiry', e.target.value)} /></div>
-          {inp('capacity_kg', 'Load Capacity (kg)', { type: 'number', placeholder: '0' })}
+          <div className="form-group"><label className="form-label">{t('Fitness Expiry')}</label><input className="form-input" type="date" value={form.fitness_expiry || ''} onChange={e => f('fitness_expiry', e.target.value)} /></div>
+          <div className="form-group"><label className="form-label">{t('National Permit')}</label><input className="form-input" type="date" value={form.national_permit_expiry || ''} onChange={e => f('national_permit_expiry', e.target.value)} /></div>
+          <div className="form-group"><label className="form-label">{t('State Permit')}</label><input className="form-input" type="date" value={form.state_permit_expiry || ''} onChange={e => f('state_permit_expiry', e.target.value)} /></div>
+          {inp('capacity_kg', t('Capacity (kg)'), { type: 'number', placeholder: '0' })}
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        {inp('current_km', 'Current KM', { type: 'number', placeholder: '0' })}
-        {inp('next_service_km', 'Next Service KM', { type: 'number', placeholder: '0' })}
+        {inp('current_km', t('Current KM'), { type: 'number', placeholder: '0' })}
+        {inp('next_service_km', t('Next Service KM'), { type: 'number', placeholder: '0' })}
       </div>
       <div className="form-group">
-        <label className="form-label">Status</label>
+        <label className="form-label">{t('Status')}</label>
         <select className="form-input" value={form.status} onChange={e => f('status', e.target.value)}>
           {VEHICLE_STATUSES.map(s => <option key={s}>{s}</option>)}
         </select>
@@ -128,6 +130,7 @@ function VehicleForm({ open, onClose, onSaved, editing }) {
 
 function VehicleDetail({ vehicle, onBack, onRefresh }) {
   const { show } = useToast()
+  const { t } = useT()
   const [tab, setTab]       = useState('docs')
   const [docs, setDocs]     = useState([])
   const [kmLogs, setKmLogs] = useState([])
@@ -218,8 +221,8 @@ function VehicleDetail({ vehicle, onBack, onRefresh }) {
 
         {/* Tabs */}
         <div className="tabs" style={{ marginBottom: 14 }}>
-          <button className={`tab${tab === 'docs' ? ' active' : ''}`} onClick={() => setTab('docs')}>Documents</button>
-          <button className={`tab${tab === 'km' ? ' active' : ''}`} onClick={() => setTab('km')}>KM Log</button>
+          <button className={`tab${tab === 'docs' ? ' active' : ''}`} onClick={() => setTab('docs')}>{t('Documents')}</button>
+          <button className={`tab${tab === 'km' ? ' active' : ''}`} onClick={() => setTab('km')}>{t('KM Logs')}</button>
         </div>
 
         {/* Documents Tab */}
@@ -228,9 +231,9 @@ function VehicleDetail({ vehicle, onBack, onRefresh }) {
             {docs.length === 0 ? (
               <div className="empty">
                 <div className="empty-icon">📄</div>
-                <div className="empty-title">No documents yet</div>
-                <div className="empty-desc">Store RC, Insurance, PUC certificates here</div>
-                <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => setDocModal(true)}>+ Add Document</button>
+                <div className="empty-title">{t('No documents yet')}</div>
+                <div className="empty-desc">{t('Store RC, Insurance, PUC certificates here')}</div>
+                <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => setDocModal(true)}>+ {t('Add Document')}</button>
               </div>
             ) : docs.map(doc => (
               <div key={doc.id} className="card" style={{ borderLeft: '3px solid #3b82f6' }}>
@@ -262,9 +265,9 @@ function VehicleDetail({ vehicle, onBack, onRefresh }) {
             {kmLogs.length === 0 ? (
               <div className="empty">
                 <div className="empty-icon">🛣️</div>
-                <div className="empty-title">No KM logs yet</div>
-                <div className="empty-desc">Track odometer readings to monitor usage</div>
-                <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => setKmModal(true)}>+ Log KM</button>
+                <div className="empty-title">{t('No KM logs yet')}</div>
+                <div className="empty-desc">{t('Track odometer readings to monitor usage')}</div>
+                <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => setKmModal(true)}>+ {t('Log KM')}</button>
               </div>
             ) : (
               <div>
@@ -295,21 +298,21 @@ function VehicleDetail({ vehicle, onBack, onRefresh }) {
       </div>
 
       {/* Document Modal */}
-      <Modal isOpen={docModal} onClose={() => setDocModal(false)} title="Add Document"
+      <Modal isOpen={docModal} onClose={() => setDocModal(false)} title={t('Add Document')}
         footer={<>
-          <button className="btn btn-secondary flex-1" onClick={() => setDocModal(false)}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={() => setDocModal(false)}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleAddDoc} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : 'Save'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>}
       >
         <div className="form-group">
-          <label className="form-label">Document Type</label>
+          <label className="form-label">{t('Document Type')}</label>
           <select className="form-input" value={docForm.doc_type} onChange={e => setDocForm(p => ({ ...p, doc_type: e.target.value }))}>
             {DOC_TYPES.map(t => <option key={t}>{t}</option>)}
           </select>
         </div>
-        <div className="form-group"><label className="form-label">Notes (Optional)</label><input className="form-input" value={docForm.notes} onChange={e => setDocForm(p => ({ ...p, notes: e.target.value }))} placeholder="e.g. Valid until Dec 2025" /></div>
+        <div className="form-group"><label className="form-label">{t('Notes (Optional)')}</label><input className="form-input" value={docForm.notes} onChange={e => setDocForm(p => ({ ...p, notes: e.target.value }))} placeholder="e.g. Valid until Dec 2025" /></div>
         <button className="btn btn-secondary" style={{ width: '100%', marginBottom: 10 }} onClick={handlePhotoCapture}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
           {docForm.file_data ? 'Change Photo' : 'Capture / Upload Photo'}
@@ -320,25 +323,25 @@ function VehicleDetail({ vehicle, onBack, onRefresh }) {
       </Modal>
 
       {/* KM Modal */}
-      <Modal isOpen={kmModal} onClose={() => setKmModal(false)} title="Log KM Reading"
+      <Modal isOpen={kmModal} onClose={() => setKmModal(false)} title={t('Log KM Reading')}
         footer={<>
-          <button className="btn btn-secondary flex-1" onClick={() => setKmModal(false)}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={() => setKmModal(false)}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleAddKm} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : 'Save'}
+            {saving ? <span className="spinner spinner-sm" /> : t('Save')}
           </button>
         </>}
       >
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div className="form-group"><label className="form-label">KM Reading</label><input className="form-input" type="number" value={kmForm.km_reading} onChange={e => setKmForm(p => ({ ...p, km_reading: e.target.value }))} placeholder="e.g. 82500" /></div>
-          <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={kmForm.date} onChange={e => setKmForm(p => ({ ...p, date: e.target.value }))} /></div>
+          <div className="form-group"><label className="form-label">{t('KM Reading')}</label><input className="form-input" type="number" value={kmForm.km_reading} onChange={e => setKmForm(p => ({ ...p, km_reading: e.target.value }))} placeholder="e.g. 82500" /></div>
+          <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={kmForm.date} onChange={e => setKmForm(p => ({ ...p, date: e.target.value }))} /></div>
         </div>
         <div className="form-group">
-          <label className="form-label">Purpose</label>
+          <label className="form-label">{t('Purpose')}</label>
           <select className="form-input" value={kmForm.purpose} onChange={e => setKmForm(p => ({ ...p, purpose: e.target.value }))}>
             {PURPOSES.map(p => <option key={p}>{p}</option>)}
           </select>
         </div>
-        <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={kmForm.notes} onChange={e => setKmForm(p => ({ ...p, notes: e.target.value }))} placeholder="Optional notes" /></div>
+        <div className="form-group"><label className="form-label">{t('Notes')}</label><input className="form-input" value={kmForm.notes} onChange={e => setKmForm(p => ({ ...p, notes: e.target.value }))} placeholder="Optional notes" /></div>
       </Modal>
     </>
   )
@@ -347,6 +350,7 @@ function VehicleDetail({ vehicle, onBack, onRefresh }) {
 export default function Vehicles() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [vehicles, setVehicles] = useState([])
   const [loading, setLoading]   = useState(true)
   const [search, setSearch]     = useState('')
@@ -377,11 +381,11 @@ export default function Vehicles() {
 
   return (
     <>
-      <Header title="Vehicles"
+      <Header title={t('Vehicle')}
         rightAction={
           <button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModalOpen(true) }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add
+            {t('Add')}
           </button>
         }
       />
@@ -411,8 +415,8 @@ export default function Vehicles() {
         {!loading && filtered.length === 0 && (
           <div className="empty">
             <div className="empty-icon">🚛</div>
-            <div className="empty-title">No vehicles found</div>
-            <div className="empty-desc">{search ? `No results for "${search}"` : 'Add your first vehicle'}</div>
+            <div className="empty-title">{t('No vehicles found')}</div>
+            <div className="empty-desc">{search ? `No results for "${search}"` : t('Add your first vehicle')}</div>
           </div>
         )}
 

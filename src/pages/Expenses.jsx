@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { getAll, add, update, remove } from '../services/expenseService.js'
 import { getAll as getVehicles } from '../services/vehicleService.js'
 import { getAll as getTrips } from '../services/tripService.js'
@@ -18,6 +19,7 @@ function categoryColor(cat) {
 
 function ExpenseForm({ open, onClose, onSaved, editing, vehicles, trips, vendors }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { category: 'Miscellaneous', amount: '', date: todayStr(), vehicle_id: '', trip_id: '', vendor_id: '', notes: '', receipt_photo: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -41,26 +43,26 @@ function ExpenseForm({ open, onClose, onSaved, editing, vehicles, trips, vendors
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Expense' : 'Add Expense'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit Expense') : t('Add Expense')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
             {saving ? <span className="spinner spinner-sm" /> : null}
-            {editing ? 'Update' : 'Save Expense'}
+            {editing ? t('Update') : t('Save Expense')}
           </button>
         </>
       }
     >
       <div className="form-group">
-        <label className="form-label">Category</label>
+        <label className="form-label">{t('Category')}</label>
         <select className="form-input" value={form.category} onChange={e => f('category', e.target.value)}>
           {CATEGORIES.map(c => <option key={c}>{c}</option>)}
         </select>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Amount ₹</label><input className="form-input" type="number" value={form.amount||''} onChange={e => f('amount', e.target.value)} placeholder="0" /></div>
-        <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date||''} onChange={e => f('date', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Amount')} ₹</label><input className="form-input" type="number" value={form.amount||''} onChange={e => f('amount', e.target.value)} placeholder="0" /></div>
+        <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={form.date||''} onChange={e => f('date', e.target.value)} /></div>
       </div>
       <div className="form-group">
         <label className="form-label">Vehicle (Optional)</label>
@@ -83,7 +85,7 @@ function ExpenseForm({ open, onClose, onSaved, editing, vehicles, trips, vendors
           {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
         </select>
       </div>
-      <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={form.notes||''} onChange={e => f('notes', e.target.value)} placeholder="Optional notes" /></div>
+      <div className="form-group"><label className="form-label">{t('Notes')}</label><input className="form-input" value={form.notes||''} onChange={e => f('notes', e.target.value)} placeholder="Optional notes" /></div>
       <div className="form-group">
         <label className="form-label">Receipt Photo (Optional)</label>
         <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} id="exp-receipt-input"
@@ -114,6 +116,7 @@ function ExpenseForm({ open, onClose, onSaved, editing, vehicles, trips, vendors
 export default function Expenses() {
   const navigate  = useNavigate()
   const { show }  = useToast()
+  const { t } = useT()
   const [expenses,  setExpenses]  = useState([])
   const [vehicles,  setVehicles]  = useState([])
   const [trips,     setTrips]     = useState([])
@@ -154,18 +157,18 @@ export default function Expenses() {
 
   return (
     <>
-      <Header title="Expenses" onBack={() => navigate('/more')}
+      <Header title={t('Expenses')} onBack={() => navigate('/more')}
         rightAction={
           <button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModalOpen(true) }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add
+            {t('Add')}
           </button>
         }
       />
       <div className="page">
         {/* Summary */}
         <div className="card" style={{ textAlign: 'center', borderTop: '2px solid var(--red)', marginBottom: 14 }}>
-          <div style={{ fontSize: 11, color: 'var(--text2)', textTransform: 'uppercase', marginBottom: 4 }}>Total ({filter})</div>
+          <div style={{ fontSize: 11, color: 'var(--text2)', textTransform: 'uppercase', marginBottom: 4 }}>{t('Total')} ({filter})</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--red)' }}>{formatCurrency(totalAmt)}</div>
         </div>
 
@@ -182,7 +185,7 @@ export default function Expenses() {
         {loading && <div className="loading"><span className="spinner" />Loading…</div>}
 
         {!loading && filtered.length === 0 && (
-          <div className="empty"><div className="empty-icon">💸</div><div className="empty-title">No expenses</div><div className="empty-desc">Log your first expense</div></div>
+          <div className="empty"><div className="empty-icon">💸</div><div className="empty-title">{t('No data found')}</div><div className="empty-desc">{t('Log your first expense')}</div></div>
         )}
 
         {!loading && sortedDates.map(date => (

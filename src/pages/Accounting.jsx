@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.jsx'
 import { formatDate, formatCurrency, todayStr, getErrorMsg } from '../utils.js'
 import Modal from '../components/Modal.jsx'
 import Header from '../components/Header.jsx'
+import { useT } from '../i18n/index.js'
 
 const CATEGORIES = ['Cash', 'Bank', 'Party', 'Income', 'Expense', 'Capital']
 const TYPES = ['credit', 'debit']
@@ -12,6 +13,7 @@ const TYPES = ['credit', 'debit']
 export default function Accounting() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [entries, setEntries]   = useState([])
   const [loading, setLoading]   = useState(true)
   const [modal,   setModal]     = useState(false)
@@ -57,7 +59,7 @@ export default function Accounting() {
 
   return (
     <>
-      <Header title="Accounting" onBack={() => navigate('/more')}
+      <Header title={t('Accounting')} onBack={() => navigate('/more')}
         rightAction={<button className="btn btn-primary btn-sm" onClick={() => setModal(true)}>+ Entry</button>}
       />
       <div className="page">
@@ -65,7 +67,7 @@ export default function Accounting() {
           {[
             { label: 'Total Income', value: formatCurrency(totalCredit), color: '#10b981' },
             { label: 'Total Expense', value: formatCurrency(totalDebit), color: '#ef4444' },
-            { label: 'Balance', value: formatCurrency(totalCredit - totalDebit), color: totalCredit >= totalDebit ? '#10b981' : '#ef4444' },
+            { label: t('Closing Balance'), value: formatCurrency(totalCredit - totalDebit), color: totalCredit >= totalDebit ? '#10b981' : '#ef4444' },
           ].map(s => (
             <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 8px', textAlign: 'center' }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: s.color }}>{s.value}</div>
@@ -75,7 +77,7 @@ export default function Accounting() {
         </div>
 
         <div className="tabs">
-          <button className={`tab${tab === 'all' ? ' active' : ''}`} onClick={() => setTab('all')}>All Entries</button>
+          <button className={`tab${tab === 'all' ? ' active' : ''}`} onClick={() => setTab('all')}>{t('Ledger')}</button>
           <button className={`tab${tab === 'daybook' ? ' active' : ''}`} onClick={() => setTab('daybook')}>Daybook</button>
         </div>
 
@@ -106,12 +108,12 @@ export default function Accounting() {
         ))}
       </div>
 
-      <Modal isOpen={modal} onClose={() => setModal(false)} title="Add Ledger Entry"
+      <Modal isOpen={modal} onClose={() => setModal(false)} title={t('Transaction')}
         footer={
           <>
-            <button className="btn btn-secondary flex-1" onClick={() => setModal(false)}>Cancel</button>
+            <button className="btn btn-secondary flex-1" onClick={() => setModal(false)}>{t('Cancel')}</button>
             <button className="btn btn-primary flex-1" onClick={handleAdd} disabled={saving}>
-              {saving ? <span className="spinner spinner-sm" /> : 'Add Entry'}
+              {saving ? <span className="spinner spinner-sm" /> : t('Save')}
             </button>
           </>
         }
@@ -120,8 +122,8 @@ export default function Accounting() {
           <div className="form-group">
             <label className="form-label">Type</label>
             <select className="form-input" value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}>
-              <option value="credit">Credit (Income)</option>
-              <option value="debit">Debit (Expense)</option>
+              <option value="credit">{t('Credit')} (Income)</option>
+              <option value="debit">{t('Debit')} (Expense)</option>
             </select>
           </div>
           <div className="form-group">
@@ -133,14 +135,14 @@ export default function Accounting() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <div className="form-group">
-            <label className="form-label">Amount ₹</label>
+            <label className="form-label">{t('Amount')} ₹</label>
             <input className="form-input" type="number" value={form.type === 'credit' ? (form.credit||'') : (form.debit||'')}
               onChange={e => setForm(p => p.type === 'credit' ? { ...p, credit: e.target.value, debit: 0 } : { ...p, debit: e.target.value, credit: 0 })}
               placeholder="0" />
           </div>
-          <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
+          <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
         </div>
-        <div className="form-group"><label className="form-label">Narration</label><input className="form-input" value={form.narration||''} onChange={e => setForm(p => ({ ...p, narration: e.target.value }))} placeholder="Description of entry" /></div>
+        <div className="form-group"><label className="form-label">{t('Description')}</label><input className="form-input" value={form.narration||''} onChange={e => setForm(p => ({ ...p, narration: e.target.value }))} placeholder="Description of entry" /></div>
       </Modal>
     </>
   )

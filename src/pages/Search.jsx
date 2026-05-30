@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 import { formatCurrency, formatDate } from '../utils.js'
 import db from '../db/database.js'
 
@@ -72,6 +73,7 @@ async function globalSearch(q) {
 
 export default function Search() {
   const navigate = useNavigate()
+  const { t } = useT()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
@@ -119,7 +121,7 @@ export default function Search() {
         {!query && (
           <div style={{ textAlign: 'center', paddingTop: 48 }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>Search Everything</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>{t('Search')}</div>
             <div style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.6 }}>
               Search across LR numbers, consignee names,<br/>vehicles, drivers, customers, vendors...
             </div>
@@ -136,7 +138,7 @@ export default function Search() {
         {!searching && query.length >= 2 && results.length === 0 && (
           <div className="empty">
             <div className="empty-icon">😶</div>
-            <div className="empty-title">No results for "{query}"</div>
+            <div className="empty-title">{t('No data found')}</div>
             <div className="empty-desc">Try a different keyword</div>
           </div>
         )}

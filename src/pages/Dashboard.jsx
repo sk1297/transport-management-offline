@@ -4,6 +4,7 @@ import { Share } from '@capacitor/share'
 import { useAuth } from '../context/AuthContext.jsx'
 import { formatCurrency, formatDate, todayStr, daysUntil } from '../utils.js'
 import db from '../db/database.js'
+import { useT } from '../i18n/index.js'
 
 function useCountUp(target, duration = 1200) {
   const [val, setVal] = useState(0)
@@ -36,6 +37,7 @@ function Fade({ children, delay = 0 }) {
 }
 
 export default function Dashboard() {
+  const { t } = useT()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [data, setData]           = useState(null)
@@ -310,9 +312,9 @@ export default function Dashboard() {
         <Fade delay={80}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
             {[
-              { label: 'Vehicles', value: vCount, color: '#3b82f6', onClick: () => navigate('/vehicles') },
-              { label: 'Active Trips', value: tCount, color: '#10b981', onClick: () => navigate('/trips') },
-              { label: 'Pending LRs', value: lCount, color: '#f59e0b', onClick: () => navigate('/trips') },
+              { label: t('Vehicles'), value: vCount, color: '#3b82f6', onClick: () => navigate('/vehicles') },
+              { label: t('Active Trips'), value: tCount, color: '#10b981', onClick: () => navigate('/trips') },
+              { label: t('Pending LRs'), value: lCount, color: '#f59e0b', onClick: () => navigate('/trips') },
             ].map(pill => (
               <div key={pill.label} onClick={pill.onClick} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderTop: `2px solid ${pill.color}`, borderRadius: 12, padding: '10px 6px', textAlign: 'center', cursor: 'pointer' }}
                 onPointerEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
@@ -329,16 +331,16 @@ export default function Dashboard() {
         <Fade delay={120}>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '14px 16px', marginBottom: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Monthly Revenue Target</div>
-              <button onClick={() => { setTargetEdit(t => !t); setTargetInput(String(revenueTarget || '')) }}
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('Monthly Revenue Target')}</div>
+              <button onClick={() => { setTargetEdit(te => !te); setTargetInput(String(revenueTarget || '')) }}
                 style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                {targetEdit ? 'Cancel' : 'Set Target'}
+                {targetEdit ? t('Cancel') : t('Set Target')}
               </button>
             </div>
             {targetEdit ? (
               <div style={{ display: 'flex', gap: 8 }}>
                 <input className="form-input" type="number" value={targetInput} onChange={e => setTargetInput(e.target.value)} placeholder="Enter monthly target ₹" style={{ flex: 1 }} />
-                <button className="btn btn-primary btn-sm" onClick={saveTarget}>Save</button>
+                <button className="btn btn-primary btn-sm" onClick={saveTarget}>{t('Save')}</button>
               </div>
             ) : (
               <>
@@ -369,7 +371,7 @@ export default function Dashboard() {
         {alerts.length > 0 && (
           <Fade delay={140}>
             <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Alerts</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{t('Alerts')}</div>
               {alerts.map((a, i) => (
                 <div key={i} style={{ background: a.type === 'warning' ? 'rgba(245,158,11,0.08)' : 'rgba(59,130,246,0.08)', border: `1px solid ${a.type === 'warning' ? 'rgba(245,158,11,0.25)' : 'rgba(59,130,246,0.25)'}`, borderRadius: 10, padding: '10px 12px', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: a.type === 'warning' ? 'var(--yellow)' : 'var(--accent)' }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -385,7 +387,7 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <Fade delay={200}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Quick Actions</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>{t('Quick Actions')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             {quickActions.map((a) => (
               <button key={a.label} onClick={() => navigate(a.path)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10, cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left' }}
@@ -408,12 +410,12 @@ export default function Dashboard() {
         {/* Recent LRs */}
         <Fade delay={280}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Recent LRs</div>
-            <button onClick={() => navigate('/trips')} style={{ background: 'none', border: 'none', fontSize: 12, fontWeight: 600, color: 'var(--accent)', cursor: 'pointer' }}>View all</button>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('Recent LRs')}</div>
+            <button onClick={() => navigate('/trips')} style={{ background: 'none', border: 'none', fontSize: 12, fontWeight: 600, color: 'var(--accent)', cursor: 'pointer' }}>{t('View All')}</button>
           </div>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, overflow: 'hidden' }}>
             {recentLRs.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '32px 20px', color: 'var(--text2)', fontSize: 13 }}>No LRs yet</div>
+              <div style={{ textAlign: 'center', padding: '32px 20px', color: 'var(--text2)', fontSize: 13 }}>{t('No trips yet')}</div>
             ) : recentLRs.map((lr, i) => {
               const payColor = lr.pay_type === 'Paid' ? '#10b981' : lr.pay_type === 'To-Pay' ? '#f59e0b' : '#3b82f6'
               return (

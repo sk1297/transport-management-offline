@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAll, add, update, remove, getLedger, addLedgerEntry, getCustomerSummary } from '../services/customerService.js'
+import { useT } from '../i18n/index.js'
 import { getByCustomer as getFollowUps, add as addFollowUp, update as updateFollowUp, STATUSES as FOLLOW_UP_STATUSES } from '../services/followUpService.js'
 import { useToast } from '../context/ToastContext.jsx'
 import { formatDate, formatCurrency, todayStr, getErrorMsg } from '../utils.js'
@@ -11,6 +12,7 @@ const CUSTOMER_TYPES = ['Regular', 'Occasional', 'Corporate', 'Government']
 
 function CustomerForm({ open, onClose, onSaved, editing }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { name: '', phone: '', gstin: '', city: '', address: '', type: 'Regular', credit_limit: '', email: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -34,32 +36,32 @@ function CustomerForm({ open, onClose, onSaved, editing }) {
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Customer' : 'Add Customer'}
+    <Modal isOpen={open} onClose={onClose} title={editing ? t('Edit Customer') : t('Add Customer')}
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
           <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner spinner-sm" /> : editing ? 'Update' : 'Add Customer'}
+            {saving ? <span className="spinner spinner-sm" /> : editing ? 'Update' : t('Add Customer')}
           </button>
         </>
       }
     >
-      <div className="form-group"><label className="form-label">Customer / Company Name *</label><input className="form-input" value={form.name} onChange={e => f('name', e.target.value)} placeholder="e.g. ABC Traders" /></div>
+      <div className="form-group"><label className="form-label">{t('Company Name')} *</label><input className="form-input" value={form.name} onChange={e => f('name', e.target.value)} placeholder="e.g. ABC Traders" /></div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Phone</label><input className="form-input" type="tel" value={form.phone} onChange={e => f('phone', e.target.value)} /></div>
-        <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={form.email} onChange={e => f('email', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Phone')}</label><input className="form-input" type="tel" value={form.phone} onChange={e => f('phone', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('Email')}</label><input className="form-input" type="email" value={form.email} onChange={e => f('email', e.target.value)} /></div>
       </div>
-      <div className="form-group"><label className="form-label">GSTIN</label><input className="form-input" value={form.gstin} onChange={e => f('gstin', e.target.value.toUpperCase())} placeholder="15-digit GSTIN" /></div>
+      <div className="form-group"><label className="form-label">{t('GSTIN')}</label><input className="form-input" value={form.gstin} onChange={e => f('gstin', e.target.value.toUpperCase())} placeholder="15-digit GSTIN" /></div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">City</label><input className="form-input" value={form.city} onChange={e => f('city', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">{t('City')}</label><input className="form-input" value={form.city} onChange={e => f('city', e.target.value)} /></div>
         <div className="form-group">
           <label className="form-label">Type</label>
           <select className="form-input" value={form.type} onChange={e => f('type', e.target.value)}>
-            {CUSTOMER_TYPES.map(t => <option key={t}>{t}</option>)}
+            {CUSTOMER_TYPES.map(ct => <option key={ct}>{ct}</option>)}
           </select>
         </div>
       </div>
-      <div className="form-group"><label className="form-label">Address</label><input className="form-input" value={form.address} onChange={e => f('address', e.target.value)} /></div>
+      <div className="form-group"><label className="form-label">{t('Address')}</label><input className="form-input" value={form.address} onChange={e => f('address', e.target.value)} /></div>
       <div className="form-group"><label className="form-label">Credit Limit ₹</label><input className="form-input" type="number" value={form.credit_limit} onChange={e => f('credit_limit', e.target.value)} placeholder="0 = unlimited" /></div>
     </Modal>
   )
@@ -67,6 +69,7 @@ function CustomerForm({ open, onClose, onSaved, editing }) {
 
 function LedgerModal({ open, onClose, onSaved, customerId }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { type: 'debit', amount: '', date: todayStr(), notes: '', ref_type: 'Manual' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -87,8 +90,8 @@ function LedgerModal({ open, onClose, onSaved, customerId }) {
     <Modal isOpen={open} onClose={onClose} title="Add Ledger Entry"
       footer={
         <>
-          <button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>Save</button>
+          <button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button>
+          <button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>{t('Save')}</button>
         </>
       }
     >
@@ -104,8 +107,8 @@ function LedgerModal({ open, onClose, onSaved, customerId }) {
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="form-group"><label className="form-label">Amount ₹</label><input className="form-input" type="number" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} /></div>
-        <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
+        <div className="form-group"><label className="form-label">{t('Amount')} ₹</label><input className="form-input" type="number" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} /></div>
+        <div className="form-group"><label className="form-label">{t('Date')}</label><input className="form-input" type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
       </div>
       <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Invoice no., LR no., etc." /></div>
     </Modal>
@@ -116,6 +119,7 @@ const FOLLOW_STATUS_COLORS = { Pending:'#f59e0b', Promised:'#3b82f6', Disputed:'
 
 function FollowUpModal({ open, onClose, onSaved, customerId, editing }) {
   const { show } = useToast()
+  const { t } = useT()
   const blank = { date: todayStr(), next_date: '', status: 'Pending', notes: '', amount_promised: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
@@ -134,7 +138,7 @@ function FollowUpModal({ open, onClose, onSaved, customerId, editing }) {
   }
   return (
     <Modal isOpen={open} onClose={onClose} title={editing ? 'Edit Follow-Up' : 'Add Follow-Up'}
-      footer={<><button className="btn btn-secondary flex-1" onClick={onClose}>Cancel</button><button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>{saving ? <span className="spinner spinner-sm"/> : 'Save'}</button></>}
+      footer={<><button className="btn btn-secondary flex-1" onClick={onClose}>{t('Cancel')}</button><button className="btn btn-primary flex-1" onClick={handleSave} disabled={saving}>{saving ? <span className="spinner spinner-sm"/> : t('Save')}</button></>}
     >
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={form.date} onChange={e=>f('date',e.target.value)}/></div>
@@ -159,6 +163,7 @@ function FollowUpModal({ open, onClose, onSaved, customerId, editing }) {
 
 function CustomerDetail({ customer, onBack, onRefresh }) {
   const { show } = useToast()
+  const { t } = useT()
   const [ledger, setLedger] = useState([])
   const [summary, setSummary] = useState({ totalBilled: 0, totalPaid: 0, outstanding: 0 })
   const [ledgerModal, setLedgerModal] = useState(false)
@@ -193,8 +198,8 @@ function CustomerDetail({ customer, onBack, onRefresh }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
           {[
             { label: 'Total Billed', value: formatCurrency(summary.totalBilled), color: '#ef4444' },
-            { label: 'Received', value: formatCurrency(summary.totalPaid), color: '#10b981' },
-            { label: 'Outstanding', value: formatCurrency(summary.outstanding), color: summary.outstanding > 0 ? '#f59e0b' : '#10b981' },
+            { label: t('Received'), value: formatCurrency(summary.totalPaid), color: '#10b981' },
+            { label: t('Outstanding'), value: formatCurrency(summary.outstanding), color: summary.outstanding > 0 ? '#f59e0b' : '#10b981' },
           ].map(s => (
             <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 8px', textAlign: 'center' }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: s.color }}>{s.value}</div>
@@ -281,6 +286,7 @@ function CustomerDetail({ customer, onBack, onRefresh }) {
 export default function Customers() {
   const navigate = useNavigate()
   const { show } = useToast()
+  const { t } = useT()
   const [customers, setCustomers] = useState([])
   const [summaries, setSummaries] = useState({})
   const [loading, setLoading] = useState(true)
@@ -319,7 +325,7 @@ export default function Customers() {
 
   return (
     <>
-      <Header title="Customers" onBack={() => navigate('/more')}
+      <Header title={t('Customers')} onBack={() => navigate('/more')}
         rightAction={<button className="btn btn-primary btn-sm" onClick={() => { setEditing(null); setModal(true) }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
         </button>}
@@ -339,7 +345,7 @@ export default function Customers() {
         <input className="form-input" style={{ marginBottom: 12 }} placeholder="Search by name, phone, city..." value={search} onChange={e => setSearch(e.target.value)} />
 
         {loading && <div className="loading"><span className="spinner" />Loading…</div>}
-        {!loading && filtered.length === 0 && <div className="empty"><div className="empty-icon">👥</div><div className="empty-title">No customers yet</div><div className="empty-desc">Add your first customer</div></div>}
+        {!loading && filtered.length === 0 && <div className="empty"><div className="empty-icon">👥</div><div className="empty-title">{t('No data found')}</div><div className="empty-desc">Add your first customer</div></div>}
 
         {!loading && filtered.map(c => {
           const sum = summaries[c.id] || {}

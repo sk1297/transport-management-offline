@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useT } from '../i18n/index.js'
 
 const navItems = [
   {
@@ -61,6 +62,7 @@ const navItems = [
 ]
 
 export default function BottomNav() {
+  const { t } = useT()
   const navigate  = useNavigate()
   const location  = useLocation()
 
@@ -80,7 +82,7 @@ export default function BottomNav() {
             onClick={() => navigate(item.path)}
           >
             {item.icon(active)}
-            <span>{item.label}</span>
+            <span>{t(item.label)}</span>
           </button>
         )
       })}
