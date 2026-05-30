@@ -117,16 +117,35 @@ export default function DieselToll() {
 
         {loading && <div className="loading"><span className="spinner" />Loading…</div>}
 
-        {!loading && tab === 'diesel' && (
-          dieselLogs.length === 0 ? <div className="empty"><div className="empty-icon">⛽</div><div className="empty-title">No diesel logs</div></div>
-          : dieselLogs.slice().reverse().map(d => {
+        {!loading && tab === 'diesel' && (() => {
+          if (dieselLogs.length === 0) return <div className="empty"><div className="empty-icon">⛽</div><div className="empty-title">No diesel logs</div></div>
+          // Build sorted-by-km map per vehicle for per-entry mileage
+          const vehLogs = {}
+          for (const d of dieselLogs) {
+            if (!vehLogs[d.vehicle_id]) vehLogs[d.vehicle_id] = []
+            vehLogs[d.vehicle_id].push(d)
+          }
+          for (const vid in vehLogs) vehLogs[vid].sort((a, b) => (a.km_reading||0) - (b.km_reading||0))
+
+          return dieselLogs.slice().reverse().map(d => {
             const v = vehicles.find(veh => veh.id === d.vehicle_id)
+            // Find previous fill-up for this vehicle (lower km_reading)
+            let kmpl = null
+            if (d.km_reading > 0 && d.litres > 0) {
+              const sorted = vehLogs[d.vehicle_id] || []
+              const idx = sorted.findIndex(x => x.id === d.id)
+              if (idx > 0) {
+                const prev = sorted[idx - 1]
+                const kmDiff = d.km_reading - (prev.km_reading || 0)
+                if (kmDiff > 0) kmpl = (kmDiff / d.litres).toFixed(1)
+              }
+            }
             return (
               <div key={d.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid #f59e0b', borderRadius: 12, padding: '12px 14px', marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>{v?.name || 'Unknown'}</div>
                   <div style={{ fontSize: 12, color: 'var(--text2)' }}>{d.litres}L @ ₹{d.rate}/L · {formatDate(d.date)}</div>
-                  {d.km_reading > 0 && <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>KM: {d.km_reading?.toLocaleString()}</div>}
+                  {d.km_reading > 0 && <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>KM: {d.km_reading?.toLocaleString()}{kmpl ? <span style={{ color: '#10b981', fontWeight: 700, marginLeft: 8 }}>{kmpl} km/L</span> : null}</div>}
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontWeight: 800, fontSize: 15, color: '#f59e0b' }}>{formatCurrency(d.amount)}</div>
@@ -137,7 +156,7 @@ export default function DieselToll() {
               </div>
             )
           })
-        )}
+        })()}
 
         {!loading && tab === 'toll' && (
           tollLogs.length === 0 ? <div className="empty"><div className="empty-icon">🛣️</div><div className="empty-title">No toll logs</div></div>

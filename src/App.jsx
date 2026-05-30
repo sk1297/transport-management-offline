@@ -23,6 +23,17 @@ import Reports from './pages/Reports.jsx'
 import Staff from './pages/Staff.jsx'
 import Settings from './pages/Settings.jsx'
 import Backup from './pages/Backup.jsx'
+import Invoices from './pages/Invoices.jsx'
+import Customers from './pages/Customers.jsx'
+import RouteMaster from './pages/Routes.jsx'
+import Agents from './pages/Agents.jsx'
+import Maintenance from './pages/Maintenance.jsx'
+import Search from './pages/Search.jsx'
+import PettyCash from './pages/PettyCash.jsx'
+import TyreManagement from './pages/TyreManagement.jsx'
+import FreightQuotation from './pages/FreightQuotation.jsx'
+import FuelEfficiency from './pages/FuelEfficiency.jsx'
+import DriverRoster from './pages/DriverRoster.jsx'
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth()
@@ -84,6 +95,17 @@ function AppRoutes() {
                 <Route path="/more/staff" element={<Staff />} />
                 <Route path="/more/settings" element={<Settings />} />
                 <Route path="/more/backup" element={<Backup />} />
+                <Route path="/more/invoices" element={<Invoices />} />
+                <Route path="/more/customers" element={<Customers />} />
+                <Route path="/more/routes" element={<RouteMaster />} />
+                <Route path="/more/agents" element={<Agents />} />
+                <Route path="/more/maintenance" element={<Maintenance />} />
+                <Route path="/more/petty-cash" element={<PettyCash />} />
+                <Route path="/more/tyres" element={<TyreManagement />} />
+                <Route path="/more/quotations" element={<FreightQuotation />} />
+                <Route path="/more/fuel-efficiency" element={<FuelEfficiency />} />
+                <Route path="/more/driver-roster" element={<DriverRoster />} />
+                <Route path="/search" element={<Search />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </AppShell>
@@ -95,14 +117,30 @@ function AppRoutes() {
 }
 
 function LicenseGate({ children }) {
-  const { activated, checking } = useLicense()
+  const { activated, checking, daysLeft } = useLicense()
   if (checking) return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <span className="spinner" />
     </div>
   )
   if (!activated) return <Activate />
-  return children
+  return (
+    <>
+      {daysLeft !== null && daysLeft <= 5 && daysLeft >= 0 && (
+        <div style={{
+          background: daysLeft <= 1 ? '#ef4444' : '#f59e0b',
+          color: '#fff', textAlign: 'center',
+          fontSize: 12, fontWeight: 700, padding: '6px 12px',
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999
+        }}>
+          {daysLeft === 0
+            ? '⚠️ License expires TODAY — contact your provider for renewal'
+            : `⚠️ License expires in ${daysLeft} day${daysLeft > 1 ? 's' : ''} — contact your provider`}
+        </div>
+      )}
+      {children}
+    </>
+  )
 }
 
 export default function App() {

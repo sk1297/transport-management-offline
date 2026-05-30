@@ -3,7 +3,21 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext.jsx'
 import db from '../db/database.js'
 
-const TABLES = ['staff','vehicles','drivers','vendors','trips','lr_bilty','expenses','diesel_logs','toll_logs','loans','loan_payments','attendance','salary','advances','accounts','inventory','stock_movement','vendor_ledger','settings']
+const TABLES = [
+  // v1
+  'staff','vehicles','drivers','vendors','trips','lr_bilty','expenses',
+  'diesel_logs','toll_logs','loans','loan_payments','attendance','salary',
+  'advances','accounts','inventory','stock_movement','vendor_ledger','settings',
+  // v2
+  'invoices','invoice_payments','trip_milestones','km_logs','vehicle_documents',
+  // v3
+  'customers','customer_ledger','maintenance_schedules','maintenance_logs',
+  'routes','agents','agent_commissions','tyres','tyre_logs',
+  // v4
+  'petty_cash','freight_rates','follow_ups','trip_settlements','violations',
+  // v5
+  'quotations','driver_roster','trip_checklist','vendor_bills',
+]
 
 export default function Backup() {
   const navigate = useNavigate()
@@ -116,7 +130,7 @@ export default function Backup() {
         <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>What is backed up?</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {['Vehicles','Drivers','Trips','LR / Bilty','Invoices','Expenses','Diesel Logs','Toll Logs','Vendors','Loans','EMI Payments','Attendance','Salary','Inventory','Accounts','Staff','Settings'].map(t => (
+            {['Vehicles','Drivers','Trips','LR / Bilty','Invoices','Invoice Payments','Expenses','Diesel Logs','Toll Logs','Vendors','Loans','EMI Payments','Attendance','Salary','Inventory','Accounts','Staff','Settings','Customers','Customer Ledger','Maintenance','Routes','Agents','Commissions','KM Logs','Vehicle Documents'].map(t => (
               <span key={t} style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(59,130,246,0.12)', color: '#3b82f6', fontSize: 11, fontWeight: 600 }}>{t}</span>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Share } from '@capacitor/share'
 import { useAuth } from '../context/AuthContext.jsx'
 import { formatCurrency, formatDate, todayStr, daysUntil } from '../utils.js'
 import db from '../db/database.js'
@@ -44,6 +45,11 @@ export default function Dashboard() {
   const [mounted, setMounted]     = useState(false)
   const [now, setNow]             = useState(new Date())
   const [companyName, setCompanyName] = useState('Transport Manager')
+  const [monthRevenue, setMonthRevenue] = useState(0)
+  const [revenueTarget, setRevenueTarget] = useState(0)
+  const [targetEdit, setTargetEdit] = useState(false)
+  const [targetInput, setTargetInput] = useState('')
+  const [followUpsDue, setFollowUpsDue] = useState(0)
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
@@ -51,21 +57,52 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem('transportSettings') || '{}')
-      if (s.companyName) setCompanyName(s.companyName)
-    } catch {}
+    // Read company name from Dexie settings, fallback to localStorage
+    db.settings.where('key').equals('company_name').first().then(row => {
+      if (row?.value) setCompanyName(row.value)
+      else {
+        try {
+          const s = JSON.parse(localStorage.getItem('transportSettings') || '{}')
+          if (s.companyName) setCompanyName(s.companyName)
+        } catch {}
+      }
+    }).catch(() => {
+      try {
+        const s = JSON.parse(localStorage.getItem('transportSettings') || '{}')
+        if (s.companyName) setCompanyName(s.companyName)
+      } catch {}
+    })
   }, [])
+
+  useEffect(() => {
+    db.settings.where('key').equals('revenue_target').first().then(r => {
+      if (r?.value) { setRevenueTarget(Number(r.value)); setTargetInput(r.value) }
+    }).catch(() => {})
+  }, [])
+
+  const saveTarget = async () => {
+    const val = Number(targetInput) || 0
+    setRevenueTarget(val)
+    setTargetEdit(false)
+    try {
+      const existing = await db.settings.where('key').equals('revenue_target').first()
+      if (existing) await db.settings.update(existing.id, { value: String(val) })
+      else await db.settings.add({ key: 'revenue_target', value: String(val) })
+    } catch {}
+  }
 
   const load = useCallback(async () => {
     setLoading(true); setMounted(false)
     try {
-      const [vehicles, trips, lrs, expenses, loans] = await Promise.all([
+      const [vehicles, trips, lrs, expenses, loans, inventory, invoices, drivers] = await Promise.all([
         db.vehicles.toArray(),
         db.trips.toArray(),
         db.lr_bilty.toArray(),
         db.expenses.toArray(),
         db.loans.toArray(),
+        db.inventory.toArray(),
+        db.invoices ? db.invoices.toArray() : Promise.resolve([]),
+        db.drivers.toArray(),
       ])
 
       const activeVehicles = vehicles.filter(v => v.status === 'Active').length
@@ -76,6 +113,16 @@ export default function Dashboard() {
       const today = todayStr()
       const todayExpenses = expenses.filter(e => e.date === today).reduce((s,e) => s + (e.amount||0), 0)
 
+      // Overdue invoices
+      const overdueInvoices = invoices.filter(inv => {
+        if (inv.status === 'Paid') return false
+        if (!inv.due_date) return false
+        return inv.due_date < today
+      })
+
+      // Low stock items
+      const lowStockItems = inventory.filter(item => (item.qty||0) <= (item.reorder_level||0) && (item.reorder_level||0) > 0)
+
       // Alerts
       const newAlerts = []
       for (const v of vehicles) {
@@ -85,10 +132,18 @@ export default function Dashboard() {
         const pucDays = daysUntil(v.puc_expiry)
         if (pucDays != null && pucDays <= 30 && pucDays >= 0)
           newAlerts.push({ type: 'warning', msg: `${v.name} (${v.reg_no}) PUC expires in ${pucDays} day(s)` })
+        const fitDays = daysUntil(v.fitness_expiry)
+        if (fitDays != null && fitDays <= 30 && fitDays >= 0)
+          newAlerts.push({ type: 'warning', msg: `${v.name} fitness certificate expires in ${fitDays} day(s)` })
+        const natDays = daysUntil(v.national_permit_expiry)
+        if (natDays != null && natDays <= 30 && natDays >= 0)
+          newAlerts.push({ type: 'warning', msg: `${v.name} national permit expires in ${natDays} day(s)` })
+        const stDays = daysUntil(v.state_permit_expiry)
+        if (stDays != null && stDays <= 30 && stDays >= 0)
+          newAlerts.push({ type: 'warning', msg: `${v.name} state permit expires in ${stDays} day(s)` })
       }
       for (const loan of loans) {
         if (loan.status === 'Active') {
-          // EMI due check - simplified: next due is start_date + paid_emis months
           const start = new Date(loan.start_date)
           start.setMonth(start.getMonth() + (loan.paid_emis || 0))
           const daysToEMI = daysUntil(start.toISOString().split('T')[0])
@@ -96,6 +151,33 @@ export default function Dashboard() {
             newAlerts.push({ type: 'info', msg: `EMI due in ${daysToEMI} day(s) — ${loan.bank_name} (${formatCurrency(loan.emi_amount)})` })
         }
       }
+      // Driver document expiry alerts
+      for (const d of drivers) {
+        const medDays = daysUntil(d.medical_expiry)
+        if (medDays != null && medDays <= 30 && medDays >= 0)
+          newAlerts.push({ type: 'warning', msg: `${d.name} medical fitness expires in ${medDays} day(s)` })
+        const badgeDays = daysUntil(d.badge_expiry)
+        if (badgeDays != null && badgeDays <= 30 && badgeDays >= 0)
+          newAlerts.push({ type: 'warning', msg: `${d.name} badge expires in ${badgeDays} day(s)` })
+      }
+
+      if (overdueInvoices.length > 0)
+        newAlerts.push({ type: 'warning', msg: `${overdueInvoices.length} invoice(s) overdue — ₹${overdueInvoices.reduce((s,i) => s + ((i.total_amount||0) - (i.paid_amount||0)), 0).toLocaleString('en-IN')} pending` })
+      if (lowStockItems.length > 0)
+        newAlerts.push({ type: 'warning', msg: `${lowStockItems.length} inventory item(s) below minimum stock` })
+
+      // Follow-ups due today
+      try {
+        const allFU = await db.follow_ups.toArray()
+        const dueFU = allFU.filter(f => f.next_date && f.next_date <= today && f.status !== 'Resolved').length
+        setFollowUpsDue(dueFU)
+        if (dueFU > 0) newAlerts.push({ type: 'info', msg: `${dueFU} customer follow-up(s) due today` })
+      } catch {}
+
+      // This month revenue
+      const monthPrefix = today.substring(0, 7)
+      const thisMonthRevenue = lrs.filter(l => l.date?.startsWith(monthPrefix)).reduce((s,l) => s+(l.freight||0), 0)
+      setMonthRevenue(thisMonthRevenue)
 
       setData({ activeVehicles, activeTrips, pendingLRs, outstandingAmt, todayExpenses })
       setAlerts(newAlerts)
@@ -107,6 +189,20 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  const handleDailySummary = async () => {
+    const today = todayStr()
+    const [allTrips, allLRs, allExp, allDiesel] = await Promise.all([
+      db.trips.toArray(), db.lr_bilty.toArray(), db.expenses.toArray(), db.diesel_logs.toArray()
+    ])
+    const activeTrips = allTrips.filter(t => t.status === 'Active').length
+    const todayLRs = allLRs.filter(l => l.date === today)
+    const todayFreight = todayLRs.reduce((s,l) => s+(l.freight||0), 0)
+    const todayExp = allExp.filter(e => e.date === today).reduce((s,e) => s+(e.amount||0), 0)
+    const todayDiesel = allDiesel.filter(d => d.date === today).reduce((s,d) => s+(d.amount||0), 0)
+    const text = `*Daily Operations Summary — ${today}*\n\nActive Trips: ${activeTrips}\nNew LRs Today: ${todayLRs.length}\nFreight Today: ₹${todayFreight.toLocaleString('en-IN')}\nExpenses Today: ₹${todayExp.toLocaleString('en-IN')}\nDiesel Today: ₹${todayDiesel.toLocaleString('en-IN')}\n\n_Sent from Transport Manager_`
+    try { await Share.share({ text, dialogTitle: 'Daily Summary' }) } catch {}
+  }
 
   const vCount = useCountUp(mounted ? (data?.activeVehicles || 0) : 0, 900)
   const tCount = useCountUp(mounted ? (data?.activeTrips || 0) : 0, 900)
@@ -165,6 +261,17 @@ export default function Dashboard() {
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', letterSpacing: -0.3 }}>{timeStr}</div>
             <div style={{ fontSize: 10, color: 'var(--text2)' }}>{dateStr}</div>
           </div>
+          <button onClick={handleDailySummary} title="Share daily summary" style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', cursor: 'pointer' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </button>
+          <button onClick={() => navigate('/search')} style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text2)', cursor: 'pointer' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
           <button onClick={load} style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', cursor: 'pointer' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -215,6 +322,46 @@ export default function Dashboard() {
                 <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{pill.label}</div>
               </div>
             ))}
+          </div>
+        </Fade>
+
+        {/* Revenue Target Tracker */}
+        <Fade delay={120}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '14px 16px', marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Monthly Revenue Target</div>
+              <button onClick={() => { setTargetEdit(t => !t); setTargetInput(String(revenueTarget || '')) }}
+                style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                {targetEdit ? 'Cancel' : 'Set Target'}
+              </button>
+            </div>
+            {targetEdit ? (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input className="form-input" type="number" value={targetInput} onChange={e => setTargetInput(e.target.value)} placeholder="Enter monthly target ₹" style={{ flex: 1 }} />
+                <button className="btn btn-primary btn-sm" onClick={saveTarget}>Save</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                  <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)' }}>{formatCurrency(monthRevenue)}</span>
+                  {revenueTarget > 0 && <span style={{ fontSize: 12, color: 'var(--text2)' }}>of {formatCurrency(revenueTarget)}</span>}
+                </div>
+                {revenueTarget > 0 ? (
+                  <>
+                    <div style={{ height: 8, borderRadius: 4, background: 'var(--surface2)', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: 4, background: monthRevenue >= revenueTarget ? '#10b981' : '#3b82f6', width: `${Math.min(100, Math.round((monthRevenue/revenueTarget)*100))}%`, transition: 'width 0.8s cubic-bezier(0.16,1,0.3,1)' }} />
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 5 }}>
+                      {monthRevenue >= revenueTarget
+                        ? <span style={{ color: '#10b981', fontWeight: 700 }}>Target achieved!</span>
+                        : `${Math.round((monthRevenue/revenueTarget)*100)}% — ${formatCurrency(revenueTarget - monthRevenue)} to go`}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: 11, color: 'var(--text2)' }}>Tap "Set Target" to track monthly revenue goal</div>
+                )}
+              </>
+            )}
           </div>
         </Fade>
 

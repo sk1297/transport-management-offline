@@ -10,14 +10,24 @@ const MENU_SECTIONS = [
       { label: 'Diesel & Toll', sub: 'Fuel & roads',   color: '#10b981', path: '/more/diesel-toll',  icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 22V6a2 2 0 012-2h9a2 2 0 012 2v12M3 22h14M14 11h4l1.5 1.5V22H14V11z"/></svg> },
       { label: 'Vendors',      sub: 'Supplier list',   color: '#8b5cf6', path: '/more/vendors',      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
       { label: 'Inventory',    sub: 'Parts & spares',  color: '#06b6d4', path: '/more/inventory',    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> },
+      { label: 'Maintenance',  sub: 'Service scheduler', color: '#f97316', path: '/more/maintenance', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg> },
+      { label: 'Routes',       sub: 'Route master',    color: '#3b82f6', path: '/more/routes',       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 12h18M3 6l9-3 9 3M3 18l9 3 9-3"/></svg> },
+      { label: 'Tyre Mgmt',    sub: 'Track tyre health',  color: '#64748b', path: '/more/tyres',           icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg> },
+      { label: 'Fuel Efficiency', sub: 'KM/Litre tracker', color: '#10b981', path: '/more/fuel-efficiency', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 22V6a2 2 0 012-2h9a2 2 0 012 2v12M3 22h14M14 11h4l1.5 1.5V22H14V11z"/></svg> },
+      { label: 'Driver Roster',   sub: 'Monthly schedule', color: '#8b5cf6', path: '/more/driver-roster',   icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
     ]
   },
   {
     title: 'Finance',
     items: [
+      { label: 'Customers',   sub: 'Party ledger',    color: '#10b981', path: '/more/customers',  icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> },
+      { label: 'Invoices',    sub: 'Create & collect',color: '#8b5cf6', path: '/more/invoices',   icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 10h8M8 14h5"/></svg> },
+      { label: 'Petty Cash',   sub: 'Daily cash flow',   color: '#10b981', path: '/more/petty-cash',  icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg> },
+      { label: 'Quotations',   sub: 'Freight estimates', color: '#06b6d4', path: '/more/quotations',   icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> },
       { label: 'Loans',       sub: 'EMI tracker',    color: '#ef4444', path: '/more/loans',       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> },
       { label: 'Accounting',  sub: 'Ledger & books', color: '#3b82f6', path: '/more/accounting',  icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> },
-      { label: 'Reports',     sub: 'P&L & analytics',color: '#10b981', path: '/more/reports',     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+      { label: 'Reports',     sub: 'P&L & analytics',color: '#ec4899', path: '/more/reports',     icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+      { label: 'Agents',      sub: 'Commission brokers', color: '#f59e0b', path: '/more/agents',  icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> },
     ]
   },
   {
@@ -31,16 +41,16 @@ const MENU_SECTIONS = [
 ]
 
 const ROLE_COLORS = {
-  OWNER:   { bg: 'rgba(59,130,246,0.15)',  border: 'rgba(59,130,246,0.35)',  color: '#3b82f6' },
-  MANAGER: { bg: 'rgba(139,92,246,0.15)',  border: 'rgba(139,92,246,0.35)',  color: '#8b5cf6' },
-  STAFF:   { bg: 'rgba(6,182,212,0.15)',   border: 'rgba(6,182,212,0.35)',   color: '#06b6d4' },
+  owner:   { bg: 'rgba(59,130,246,0.15)',  border: 'rgba(59,130,246,0.35)',  color: '#3b82f6' },
+  manager: { bg: 'rgba(139,92,246,0.15)',  border: 'rgba(139,92,246,0.35)',  color: '#8b5cf6' },
+  staff:   { bg: 'rgba(6,182,212,0.15)',   border: 'rgba(6,182,212,0.35)',   color: '#06b6d4' },
 }
 
 export default function More() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
 
-  const roleCfg = ROLE_COLORS[user?.role] || ROLE_COLORS.STAFF
+  const roleCfg = ROLE_COLORS[(user?.role || '').toLowerCase()] || ROLE_COLORS.staff
   const initial = (user?.name || 'U')[0].toUpperCase()
 
   const handleLogout = () => {
@@ -75,7 +85,7 @@ export default function More() {
             <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 2 }}>{user?.mobile || ''}</div>
             <div style={{ marginTop: 6 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 20, fontSize: 10, fontWeight: 800, background: roleCfg.bg, border: `1px solid ${roleCfg.border}`, color: roleCfg.color }}>
-                {user?.role || 'STAFF'}
+                {(user?.role || 'staff').toUpperCase()}
               </span>
             </div>
           </div>

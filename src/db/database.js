@@ -24,6 +24,41 @@ db.version(1).stores({
   settings:       '++id, key, value',
 })
 
+db.version(2).stores({
+  invoices:          '++id, invoice_no, date, status, consignee',
+  invoice_payments:  '++id, invoice_id, date, amount, mode',
+  trip_milestones:   '++id, trip_id, stage, datetime',
+  km_logs:           '++id, vehicle_id, date, km_reading, purpose',
+  vehicle_documents: '++id, vehicle_id, doc_type, uploaded_date',
+})
+
+db.version(3).stores({
+  customers:            '++id, name, phone, gstin, city',
+  customer_ledger:      '++id, customer_id, date, type, ref_type, ref_id',
+  maintenance_schedules:'++id, vehicle_id, service_type',
+  maintenance_logs:     '++id, vehicle_id, schedule_id, date',
+  routes:               '++id, from_loc, to_loc',
+  agents:               '++id, name, phone',
+  agent_commissions:    '++id, agent_id, lr_id, trip_id, paid',
+  tyres:                '++id, vehicle_id, serial_no, position',
+  tyre_logs:            '++id, tyre_id, date, type',
+})
+
+db.version(4).stores({
+  petty_cash:         '++id, date, type',
+  freight_rates:      '++id, customer_id, from_loc, to_loc',
+  follow_ups:         '++id, customer_id, invoice_id, date, next_date, status',
+  trip_settlements:   '++id, trip_id, driver_id',
+  violations:         '++id, vehicle_id, driver_id, date, type',
+})
+
+db.version(5).stores({
+  quotations:     '++id, customer_id, date, status',
+  driver_roster:  '++id, driver_id, vehicle_id, date',
+  trip_checklist: '++id, trip_id',
+  vendor_bills:   '++id, vendor_id, due_date, status',
+})
+
 db.on('ready', async () => {
   const staffCount = await db.staff.count()
   if (staffCount > 0) return

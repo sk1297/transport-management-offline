@@ -72,7 +72,7 @@ function LoanDetail({ loan, vehicle, onBack, onRefresh }) {
   const { show } = useToast()
   const [payments, setPayments] = useState([])
   const [payModal, setPayModal] = useState(false)
-  const [payForm, setPayForm] = useState({ date: todayStr(), amount: loan.emi_amount || '' })
+  const [payForm, setPayForm] = useState({ date: todayStr(), amount: loan.emi_amount || '', mode: 'Bank Transfer' })
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
@@ -134,7 +134,10 @@ function LoanDetail({ loan, vehicle, onBack, onRefresh }) {
         ) : payments.slice().reverse().map(p => (
           <div key={p.id} className="card" style={{ borderLeft: '3px solid #10b981' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: 13, color: 'var(--text2)' }}>{formatDate(p.date)}</div>
+              <div>
+                <div style={{ fontSize: 13, color: 'var(--text2)' }}>{formatDate(p.date)}</div>
+                {p.mode && <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 2 }}>{p.mode}</div>}
+              </div>
               <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--green)' }}>{formatCurrency(p.amount)}</div>
             </div>
           </div>
@@ -154,6 +157,15 @@ function LoanDetail({ loan, vehicle, onBack, onRefresh }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <div className="form-group"><label className="form-label">Amount ₹</label><input className="form-input" type="number" value={payForm.amount} onChange={e => setPayForm(p => ({ ...p, amount: e.target.value }))} /></div>
           <div className="form-group"><label className="form-label">Date</label><input className="form-input" type="date" value={payForm.date} onChange={e => setPayForm(p => ({ ...p, date: e.target.value }))} /></div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Payment Mode</label>
+          <select className="form-input" value={payForm.mode} onChange={e => setPayForm(p => ({ ...p, mode: e.target.value }))}>
+            <option>Bank Transfer</option>
+            <option>Cash</option>
+            <option>Cheque</option>
+            <option>UPI</option>
+          </select>
         </div>
       </Modal>
     </>

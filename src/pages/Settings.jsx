@@ -18,6 +18,16 @@ const DEFAULT = {
   currency: 'INR',
 }
 
+export async function getSettingsAsync() {
+  try {
+    const rows = await db.settings.toArray()
+    const obj = {}
+    for (const row of rows) obj[row.key] = row.value
+    return { ...DEFAULT, ...obj }
+  } catch { return { ...DEFAULT } }
+}
+
+// Sync fallback still reads localStorage for dashboard/other pages until they migrate
 export function getSettings() {
   try {
     const s = localStorage.getItem('transportSettings')
@@ -28,14 +38,25 @@ export function getSettings() {
 export default function Settings() {
   const navigate = useNavigate()
   const { show } = useToast()
-  const [form, setForm] = useState(getSettings())
+  const [form, setForm] = useState(DEFAULT)
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    getSettingsAsync().then(s => setForm(s))
+  }, [])
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
   const save = async () => {
     setSaving(true)
     try {
+      // Save each key as a row in settings table (upsert via put with key index)
+      for (const [key, value] of Object.entries(form)) {
+        const existing = await db.settings.where('key').equals(key).first()
+        if (existing) await db.settings.update(existing.id, { value })
+        else await db.settings.add({ key, value })
+      }
+      // Keep localStorage in sync for backward compat
       localStorage.setItem('transportSettings', JSON.stringify(form))
       show('Settings saved!', 'success')
     } catch (err) { show(err.message || 'Error', 'error') }

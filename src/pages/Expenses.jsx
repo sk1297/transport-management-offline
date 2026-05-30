@@ -18,7 +18,7 @@ function categoryColor(cat) {
 
 function ExpenseForm({ open, onClose, onSaved, editing, vehicles, trips, vendors }) {
   const { show } = useToast()
-  const blank = { category: 'Miscellaneous', amount: '', date: todayStr(), vehicle_id: '', trip_id: '', vendor_id: '', notes: '' }
+  const blank = { category: 'Miscellaneous', amount: '', date: todayStr(), vehicle_id: '', trip_id: '', vendor_id: '', notes: '', receipt_photo: '' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
 
@@ -84,6 +84,29 @@ function ExpenseForm({ open, onClose, onSaved, editing, vehicles, trips, vendors
         </select>
       </div>
       <div className="form-group"><label className="form-label">Notes</label><input className="form-input" value={form.notes||''} onChange={e => f('notes', e.target.value)} placeholder="Optional notes" /></div>
+      <div className="form-group">
+        <label className="form-label">Receipt Photo (Optional)</label>
+        <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} id="exp-receipt-input"
+          onChange={e => {
+            const file = e.target.files?.[0]
+            if (!file) return
+            const reader = new FileReader()
+            reader.onload = ev => f('receipt_photo', ev.target.result)
+            reader.readAsDataURL(file)
+          }}
+        />
+        {form.receipt_photo ? (
+          <div style={{ position: 'relative', marginTop: 4 }}>
+            <img src={form.receipt_photo} alt="Receipt" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 10, border: '1px solid var(--border)' }} />
+            <button type="button" onClick={() => f('receipt_photo', '')} style={{ position: 'absolute', top: 6, right: 6, width: 26, height: 26, borderRadius: '50%', background: 'rgba(239,68,68,0.9)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✕</button>
+          </div>
+        ) : (
+          <button type="button" onClick={() => document.getElementById('exp-receipt-input').click()} style={{ width: '100%', padding: '10px', borderRadius: 10, border: '1.5px dashed var(--border)', background: 'var(--surface2)', color: 'var(--text2)', cursor: 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Capture Receipt
+          </button>
+        )}
+      </div>
     </Modal>
   )
 }
@@ -175,6 +198,7 @@ export default function Expenses() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>{exp.category}</div>
                     <div style={{ fontSize: 11, color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{exp.notes || '—'}</div>
+                    {exp.receipt_photo && <span style={{ fontSize: 10, color: '#10b981', fontWeight: 600 }}>📷 Receipt</span>}
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--red)' }}>{formatCurrency(exp.amount)}</div>

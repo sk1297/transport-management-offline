@@ -4,12 +4,14 @@ import { useToast } from '../context/ToastContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import db from '../db/database.js'
 
-const ROLES = ['DRIVER', 'MANAGER', 'OWNER']
+const ROLES = ['owner', 'manager', 'staff']
 const ROLE_CFG = {
-  OWNER:   { bg: 'rgba(59,130,246,0.15)',  color: '#3b82f6', label: 'Owner'   },
-  MANAGER: { bg: 'rgba(139,92,246,0.15)',  color: '#8b5cf6', label: 'Manager' },
-  DRIVER:  { bg: 'rgba(16,185,129,0.15)',  color: '#10b981', label: 'Driver'  },
+  owner:   { bg: 'rgba(59,130,246,0.15)',  color: '#3b82f6', label: 'Owner'   },
+  manager: { bg: 'rgba(139,92,246,0.15)',  color: '#8b5cf6', label: 'Manager' },
+  staff:   { bg: 'rgba(16,185,129,0.15)',  color: '#10b981', label: 'Staff'   },
 }
+// Normalize any legacy uppercase roles to lowercase
+const normalizeRole = (r) => (r || 'staff').toLowerCase()
 
 function StaffSheet({ open, onClose, onSaved, editing }) {
   const { show } = useToast()
@@ -20,8 +22,8 @@ function StaffSheet({ open, onClose, onSaved, editing }) {
   useEffect(() => {
     if (open) {
       setForm(editing
-        ? { name: editing.name || '', mobile: editing.mobile || '', role: editing.role || 'MANAGER', password: '' }
-        : { name: '', mobile: '', role: 'MANAGER', password: '' }
+        ? { name: editing.name || '', mobile: editing.mobile || '', role: normalizeRole(editing.role), password: '' }
+        : { name: '', mobile: '', role: 'manager', password: '' }
       )
       setErrors({})
     }
@@ -121,8 +123,8 @@ export default function Staff() {
 
   const toggleActive = async (s) => {
     // Cannot deactivate owner if they are the only active owner
-    if (s.isActive && s.role === 'OWNER') {
-      const activeOwners = list.filter(m => m.role === 'OWNER' && m.isActive)
+    if (s.isActive && normalizeRole(s.role) === 'owner') {
+      const activeOwners = list.filter(m => normalizeRole(m.role) === 'owner' && m.isActive)
       if (activeOwners.length <= 1) {
         show('Cannot deactivate the only active Owner', 'error'); return
       }
@@ -134,8 +136,8 @@ export default function Staff() {
 
   const handleDelete = async (s) => {
     if (s.mobile === user?.mobile) { show('Cannot delete your own account', 'error'); return }
-    if (s.role === 'OWNER') {
-      const owners = list.filter(m => m.role === 'OWNER')
+    if (normalizeRole(s.role) === 'owner') {
+      const owners = list.filter(m => normalizeRole(m.role) === 'owner')
       if (owners.length <= 1) { show('Cannot delete the only Owner account', 'error'); return }
     }
     if (!window.confirm(`Delete "${s.name}"?`)) return
@@ -153,7 +155,7 @@ export default function Staff() {
           <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>Staff</div>
           <div style={{ fontSize: 10, color: 'var(--text2)' }}>App users & access</div>
         </div>
-        {user?.role === 'OWNER' && (
+        {normalizeRole(user?.role) === 'owner' && (
           <button onClick={() => { setEditing(null); setSheet(true) }} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add
@@ -167,7 +169,7 @@ export default function Staff() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {filtered.map(s => {
-            const cfg = ROLE_CFG[s.role] || ROLE_CFG.DRIVER
+            const cfg = ROLE_CFG[normalizeRole(s.role)] || ROLE_CFG.staff
             return (
               <div key={s.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: '50%', background: cfg.bg, border: `1.5px solid ${cfg.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 900, color: cfg.color, flexShrink: 0 }}>
@@ -181,7 +183,7 @@ export default function Staff() {
                     {!s.isActive && <span style={{ marginLeft: 6, display: 'inline-block', padding: '2px 10px', borderRadius: 20, fontSize: 10, fontWeight: 800, background: 'rgba(239,68,68,0.15)', color: 'var(--red)' }}>INACTIVE</span>}
                   </div>
                 </div>
-                {user?.role === 'OWNER' && (
+                {normalizeRole(user?.role) === 'owner' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <button onClick={() => { setEditing(s); setSheet(true) }} style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text2)' }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>

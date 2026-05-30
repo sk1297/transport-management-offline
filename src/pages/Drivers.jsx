@@ -10,7 +10,7 @@ const DRIVER_STATUSES = ['Active', 'On Trip', 'Inactive']
 
 function DriverForm({ open, onClose, onSaved, editing }) {
   const { show } = useToast()
-  const blank = { name: '', phone: '', license_no: '', license_expiry: '', address: '', join_date: todayStr(), status: 'Active' }
+  const blank = { name: '', phone: '', license_no: '', license_expiry: '', medical_expiry: '', badge_expiry: '', emergency_contact: '', blood_group: '', address: '', join_date: todayStr(), status: 'Active' }
   const [form, setForm] = useState(blank)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
@@ -62,7 +62,15 @@ function DriverForm({ open, onClose, onSaved, editing }) {
       {inp('name', 'Full Name', { placeholder: 'Driver full name' })}
       {inp('phone', 'Phone Number', { type: 'tel', placeholder: '10-digit phone' })}
       {inp('license_no', 'License Number', { placeholder: 'DL Number' })}
-      <div className="form-group"><label className="form-label">License Expiry</label><input className="form-input" type="date" value={form.license_expiry || ''} onChange={e => f('license_expiry', e.target.value)} /></div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div className="form-group"><label className="form-label">License Expiry</label><input className="form-input" type="date" value={form.license_expiry || ''} onChange={e => f('license_expiry', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">Medical Fitness Expiry</label><input className="form-input" type="date" value={form.medical_expiry || ''} onChange={e => f('medical_expiry', e.target.value)} /></div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div className="form-group"><label className="form-label">Badge Expiry</label><input className="form-input" type="date" value={form.badge_expiry || ''} onChange={e => f('badge_expiry', e.target.value)} /></div>
+        <div className="form-group"><label className="form-label">Blood Group</label><input className="form-input" value={form.blood_group || ''} onChange={e => f('blood_group', e.target.value)} placeholder="e.g. A+" /></div>
+      </div>
+      {inp('emergency_contact', 'Emergency Contact', { type: 'tel', placeholder: 'Emergency phone' })}
       {inp('address', 'Address', { placeholder: 'Home address' })}
       <div className="form-group"><label className="form-label">Join Date</label><input className="form-input" type="date" value={form.join_date || ''} onChange={e => f('join_date', e.target.value)} /></div>
       <div className="form-group">
@@ -167,6 +175,115 @@ function AttendanceView({ driver, onBack }) {
   )
 }
 
+function AttendanceCalendar({ driverId, month, year, onMonthChange }) {
+  const [data, setData] = useState({})
+  const [holidays, setHolidays] = useState({})
+  const { show } = useToast()
+
+  const load = useCallback(async () => {
+    const { getByDriver } = await import('../services/attendanceService.js')
+    const records = await getByDriver(driverId)
+    const map = {}
+    records.forEach(r => { map[r.date] = r })
+    setData(map)
+  }, [driverId])
+
+  useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    import('../services/apiUtils.js').then(({ getPublicHolidays }) => {
+      getPublicHolidays(year).then(list => {
+        const map = {}
+        list.forEach(h => { map[h.date] = h.name })
+        setHolidays(map)
+      }).catch(() => {})
+    }).catch(() => {})
+  }, [year])
+
+  const STATUS_COLORS = { Present: '#10b981', Absent: '#ef4444', 'Half Day': '#f59e0b', Leave: '#3b82f6' }
+
+  const firstDay = new Date(year, month - 1, 1).getDay()
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const cells = []
+  for (let i = 0; i < firstDay; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d)
+
+  const days = Object.values(data)
+  const present = days.filter(d => d.status === 'Present').length
+  const absent  = days.filter(d => d.status === 'Absent').length
+  const half    = days.filter(d => d.status === 'Half Day').length
+  const leave   = days.filter(d => d.status === 'Leave').length
+
+  const handleTap = async (day) => {
+    const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+    const existing = data[dateStr]
+    const statuses = ['Present', 'Absent', 'Half Day', 'Leave']
+    const next = existing ? statuses[(statuses.indexOf(existing.status) + 1) % statuses.length] : 'Present'
+    try {
+      const { markAttendance } = await import('../services/attendanceService.js')
+      await markAttendance(driverId, dateStr, next)
+      load()
+    } catch (err) { show('Error', 'error') }
+  }
+
+  const monthName = new Date(year, month - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })
+  const DAYS = ['S','M','T','W','T','F','S']
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <button className="btn-icon" onClick={() => onMonthChange(-1)}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{monthName}</span>
+        <button className="btn-icon" onClick={() => onMonthChange(1)}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      {/* Summary */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 10 }}>
+        {[['P', present, '#10b981'], ['A', absent, '#ef4444'], ['H', half, '#f59e0b'], ['L', leave, '#3b82f6']].map(([l, v, c]) => (
+          <div key={l} style={{ background: `${c}15`, border: `1px solid ${c}40`, borderRadius: 8, padding: '6px 4px', textAlign: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: c }}>{v}</div>
+            <div style={{ fontSize: 9, color: c, fontWeight: 600 }}>{l === 'P' ? 'Present' : l === 'A' ? 'Absent' : l === 'H' ? 'Half' : 'Leave'}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
+        {DAYS.map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: 9, fontWeight: 700, color: 'var(--text2)', padding: '4px 0' }}>{d}</div>)}
+        {cells.map((day, i) => {
+          if (!day) return <div key={`e-${i}`} />
+          const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+          const rec = data[dateStr]
+          const color = rec ? STATUS_COLORS[rec.status] : null
+          const today = new Date().toISOString().split('T')[0]
+          const holidayName = holidays[dateStr]
+          return (
+            <div key={day} onClick={() => handleTap(day)} title={holidayName || ''} style={{ height: 36, borderRadius: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: color ? `${color}20` : holidayName ? '#7c3aed15' : 'var(--surface2)', border: dateStr === today ? `2px solid var(--accent)` : `1px solid ${color || (holidayName ? '#7c3aed60' : 'var(--border)')}`, fontSize: 12, fontWeight: 700, color: color || (holidayName ? '#7c3aed' : 'var(--text2)'), transition: 'all 0.1s', position: 'relative' }}>
+              {day}
+              {holidayName && <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#7c3aed', position: 'absolute', bottom: 3 }} />}
+            </div>
+          )
+        })}
+      </div>
+      <div style={{ fontSize: 10, color: 'var(--text2)', textAlign: 'center', marginTop: 8 }}>Tap a day to cycle: Present → Absent → Half Day → Leave</div>
+      {Object.keys(holidays).filter(d => d.startsWith(`${year}-${String(month).padStart(2,'0')}`)).length > 0 && (
+        <div style={{ marginTop: 10, padding: '8px 10px', background: '#7c3aed10', borderRadius: 8, border: '1px solid #7c3aed30' }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#7c3aed', marginBottom: 4 }}>Public Holidays this month</div>
+          {Object.entries(holidays).filter(([d]) => d.startsWith(`${year}-${String(month).padStart(2,'0')}`)).map(([d, name]) => (
+            <div key={d} style={{ fontSize: 11, color: 'var(--text2)', display: 'flex', justifyContent: 'space-between' }}>
+              <span>{name}</span><span style={{ color: '#7c3aed', fontWeight: 600 }}>{d.slice(8)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function SalaryView({ driver, onBack }) {
   const { show } = useToast()
   const [salaries, setSalaries] = useState([])
@@ -174,6 +291,9 @@ function SalaryView({ driver, onBack }) {
   const [salModal, setSalModal] = useState(false)
   const [advModal, setAdvModal] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [detailTab, setDetailTab] = useState('salary')
+  const [calMonth, setCalMonth] = useState(new Date().getMonth() + 1)
+  const [calYear, setCalYear]   = useState(new Date().getFullYear())
 
   const curMonth = new Date()
   const [salForm, setSalForm] = useState({
@@ -185,10 +305,13 @@ function SalaryView({ driver, onBack }) {
   })
   const [advForm, setAdvForm] = useState({ date: todayStr(), amount: '', notes: '' })
 
+  const [attendanceRecs, setAttendanceRecs] = useState([])
+
   const load = useCallback(async () => {
-    const [sal, adv] = await Promise.all([getAllSalaries(), getAdvances(driver.id)])
+    const [sal, adv, att] = await Promise.all([getAllSalaries(), getAdvances(driver.id), getByDriver(driver.id)])
     setSalaries(sal.filter(s => s.driver_id === driver.id))
     setAdvances(adv)
+    setAttendanceRecs(att)
   }, [driver.id])
 
   useEffect(() => { load() }, [load])
@@ -222,15 +345,35 @@ function SalaryView({ driver, onBack }) {
 
   return (
     <>
-      <Header title={`${driver.name} — Salary`} onBack={onBack}
-        rightAction={
+      <Header title={`${driver.name} — Detail`} onBack={onBack}
+        rightAction={detailTab === 'salary' ? (
           <div style={{ display: 'flex', gap: 6 }}>
             <button className="btn btn-secondary btn-sm" onClick={() => setAdvModal(true)}>+ Advance</button>
             <button className="btn btn-primary btn-sm" onClick={() => setSalModal(true)}>+ Salary</button>
           </div>
-        }
+        ) : null}
       />
       <div className="page">
+        <div className="tabs" style={{ marginBottom: 14 }}>
+          <button className={`tab${detailTab === 'salary' ? ' active' : ''}`} onClick={() => setDetailTab('salary')}>Salary</button>
+          <button className={`tab${detailTab === 'attendance' ? ' active' : ''}`} onClick={() => setDetailTab('attendance')}>Attendance</button>
+        </div>
+
+        {detailTab === 'attendance' && (
+          <AttendanceCalendar
+            driverId={driver.id}
+            month={calMonth}
+            year={calYear}
+            onMonthChange={(dir) => {
+              let m = calMonth + dir, y = calYear
+              if (m > 12) { m = 1; y++ }
+              if (m < 1)  { m = 12; y-- }
+              setCalMonth(m); setCalYear(y)
+            }}
+          />
+        )}
+
+        {detailTab === 'salary' && (<>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
           {[
             { label: 'Total Salary Paid', value: formatCurrency(salaries.reduce((s,sal) => s+(sal.net_paid||0),0)), color: '#10b981' },
@@ -250,7 +393,19 @@ function SalaryView({ driver, onBack }) {
           <div key={s.id} className="card" style={{ borderLeft: '3px solid #10b981' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ fontWeight: 700, color: 'var(--text)' }}>{s.month}/{s.year}</div>
-              <div style={{ fontWeight: 800, fontSize: 15, color: '#10b981' }}>{formatCurrency(s.net_paid)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ fontWeight: 800, fontSize: 15, color: '#10b981' }}>{formatCurrency(s.net_paid)}</div>
+                <button className="btn btn-secondary btn-sm" style={{ fontSize: 10, padding: '3px 8px' }}
+                  onClick={() => {
+                    const prefix = `${s.year}-${String(s.month).padStart(2,'0')}`
+                    const monthRecs = attendanceRecs.filter(r => r.date?.startsWith(prefix))
+                    const present = monthRecs.filter(r => r.status === 'Present').length
+                    const absent  = monthRecs.filter(r => r.status === 'Absent').length
+                    printSalarySlip(driver, s, Number(s.month), Number(s.year), present, absent)
+                  }}>
+                  Print Slip
+                </button>
+              </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
               {[
@@ -283,6 +438,7 @@ function SalaryView({ driver, onBack }) {
             ))}
           </>
         )}
+        </>)}
       </div>
 
       {/* Salary Modal */}
@@ -308,7 +464,23 @@ function SalaryView({ driver, onBack }) {
             <input className="form-input" type="number" value={salForm.year} onChange={e => setSalForm(p => ({ ...p, year: e.target.value }))} />
           </div>
         </div>
-        <div className="form-group"><label className="form-label">Basic ₹</label><input className="form-input" type="number" value={salForm.basic} onChange={e => setSalForm(p => ({ ...p, basic: e.target.value }))} placeholder="0" /></div>
+        <div className="form-group">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label className="form-label">Basic ₹</label>
+            <button type="button" style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 4px' }}
+              onClick={() => {
+                const prefix = `${salForm.year}-${String(salForm.month).padStart(2,'0')}`
+                const monthAtt = attendanceRecs.filter(r => r.date?.startsWith(prefix))
+                const presentDays = monthAtt.filter(r => r.status === 'Present').length
+                const dailyRate = driver.salary ? Math.round(Number(driver.salary) / 26) : 0
+                if (dailyRate > 0 && presentDays > 0) setSalForm(p => ({ ...p, basic: String(dailyRate * presentDays) }))
+                else if (driver.salary) setSalForm(p => ({ ...p, basic: String(driver.salary) }))
+              }}>
+              Auto-calculate
+            </button>
+          </div>
+          <input className="form-input" type="number" value={salForm.basic} onChange={e => setSalForm(p => ({ ...p, basic: e.target.value }))} placeholder="0" />
+        </div>
         <div className="form-group"><label className="form-label">Allowance ₹</label><input className="form-input" type="number" value={salForm.allowance} onChange={e => setSalForm(p => ({ ...p, allowance: e.target.value }))} placeholder="0" /></div>
         <div className="form-group"><label className="form-label">Advance Deducted ₹</label><input className="form-input" type="number" value={salForm.advance_deducted} onChange={e => setSalForm(p => ({ ...p, advance_deducted: e.target.value }))} placeholder="0" /></div>
         <div style={{ background: 'var(--surface2)', borderRadius: 12, padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)' }}>
@@ -336,6 +508,39 @@ function SalaryView({ driver, onBack }) {
       </Modal>
     </>
   )
+}
+
+function printSalarySlip(driver, salaryRecord, month, year, present, absent) {
+  const s = (() => { try { return JSON.parse(localStorage.getItem('transportSettings') || '{}') } catch { return {} } })()
+  const company = s.companyName || 'Transport Company'
+  const monthName = new Date(year, month - 1).toLocaleString('en-IN', { month: 'long', year: 'numeric' })
+  const net = (salaryRecord.basic || 0) + (salaryRecord.allowance || 0) - (salaryRecord.advance_deducted || 0)
+
+  const html = `<!DOCTYPE html><html><head><title>Salary Slip</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}body{padding:20px;color:#000}.header{text-align:center;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:10px}.company{font-size:18px;font-weight:bold}.title{font-size:14px;font-weight:bold;margin:8px 0;text-decoration:underline}table{width:100%;border-collapse:collapse;margin:10px 0}th,td{border:1px solid #ccc;padding:8px;font-size:12px}th{background:#f5f5f5;text-align:left}.net{font-size:16px;font-weight:bold;text-align:right;padding:10px 0;border-top:2px solid #000;margin-top:10px}.sign{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px}.sign div{border-top:1px solid #000;padding-top:4px;font-size:10px;text-align:center}@media print{body{padding:8px}}</style>
+  </head><body>
+  <div class="header"><div class="company">${company}</div><div class="title">SALARY SLIP — ${monthName}</div></div>
+  <table><tr><th>Employee Name</th><td>${driver.name}</td><th>Phone</th><td>${driver.phone || '-'}</td></tr>
+  <tr><th>License No.</th><td>${driver.license_no || '-'}</td><th>Join Date</th><td>${driver.join_date || '-'}</td></tr></table>
+  <table><tr><th>Attendance</th><td>Present: ${present} days | Absent: ${absent} days</td></tr></table>
+  <table>
+    <tr><th colspan="2" style="background:#e8f5e9">Earnings</th></tr>
+    <tr><td>Basic Salary</td><td>₹${salaryRecord.basic || 0}</td></tr>
+    <tr><td>Allowance</td><td>₹${salaryRecord.allowance || 0}</td></tr>
+    <tr><th>Total Earnings</th><th>₹${(salaryRecord.basic || 0) + (salaryRecord.allowance || 0)}</th></tr>
+    <tr><th colspan="2" style="background:#fce4e4">Deductions</th></tr>
+    <tr><td>Advance Deducted</td><td>₹${salaryRecord.advance_deducted || 0}</td></tr>
+  </table>
+  <div class="net">Net Payable: ₹${net}</div>
+  ${salaryRecord.net_paid ? `<div style="font-size:12px;color:#10b981;margin-top:4px">Paid on: ${salaryRecord.paid_date || 'N/A'}</div>` : ''}
+  <div class="sign"><div>Employee Signature</div><div>Employer Signature</div></div>
+  </body></html>`
+
+  const w = window.open('', '_blank', 'width=700,height=600')
+  if (!w) { alert('Please allow pop-ups to print salary slip'); return }
+  w.document.write(html)
+  w.document.close()
+  w.onload = () => { w.focus(); w.print() }
 }
 
 export default function Drivers() {
@@ -428,6 +633,12 @@ export default function Drivers() {
               const licColor = licDays == null ? 'var(--text2)' : licDays < 0 ? '#ef4444' : licDays <= 30 ? '#f59e0b' : '#10b981'
               const licBg    = licDays == null ? 'var(--surface2)' : licDays < 0 ? 'rgba(239,68,68,0.12)' : licDays <= 30 ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)'
               const licLabel = licDays == null ? 'No Expiry' : licDays < 0 ? `Expired ${Math.abs(licDays)}d ago` : licDays === 0 ? 'Expires Today' : `${licDays}d left`
+              const medDays  = daysUntil(d.medical_expiry)
+              const badgeDays = daysUntil(d.badge_expiry)
+              const docAlerts = [
+                medDays != null && medDays <= 30 ? `Medical ${medDays < 0 ? 'expired' : `due in ${medDays}d`}` : null,
+                badgeDays != null && badgeDays <= 30 ? `Badge ${badgeDays < 0 ? 'expired' : `due in ${badgeDays}d`}` : null,
+              ].filter(Boolean)
               return (
                 <div key={d.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, marginBottom: 12, overflow: 'hidden', animation: `fadeUp 0.3s ease ${idx*0.04}s both` }}>
                   {/* Top accent bar */}
@@ -479,6 +690,14 @@ export default function Drivers() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Doc alerts */}
+                      {(docAlerts.length > 0 || d.blood_group) && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
+                          {d.blood_group && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>🩸 {d.blood_group}</span>}
+                          {docAlerts.map((a, i) => <span key={i} style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}>⚠️ {a}</span>)}
+                        </div>
+                      )}
 
                       {/* Address (if available) */}
                       {d.address && (
